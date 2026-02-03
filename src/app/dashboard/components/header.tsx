@@ -1,111 +1,65 @@
 "use client";
 
-import { logoutAction } from "@/actions/auth-actions";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Loader2, LogOut, User } from "lucide-react";
-import { useAction } from "next-safe-action/hooks";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-interface HeaderProps {
-	firstName?: string | null;
-	lastName?: string | null;
-	email?: string;
-	isAdmin?: boolean;
-}
+// Header no longer needs user props as it doesn't display them
+export function Header() {
+	const pathname = usePathname();
 
-export function Header({ firstName, lastName, email, isAdmin }: HeaderProps) {
-	const { execute, status } = useAction(logoutAction);
+	const titleMap: { [key: string]: string } = {
+		"/dashboard": "Beranda",
+		"/dashboard/profile": "Pengaturan Akun",
+		"/dashboard/courses": "Courses",
+		"/dashboard/detailcourse": "Detail Courses",
+		"/dashboard/user": "Users",
+		"/dashboard/free": "Materi Gratis",
+		"/dashboard/premium": "Materi Premium",
+	};
+
+	let title = "Pengaturan Akun"; // Default
+
+	// Check exact match first
+	if (titleMap[pathname]) {
+		title = titleMap[pathname];
+	} else {
+		// Handle nested routes or partial matches if needed
+		// For now simple exact mapping covers the sidebar items
+		const matchingPath = Object.keys(titleMap).find(
+			(path) => path !== "/dashboard" && pathname.startsWith(path)
+		);
+		if (matchingPath) {
+			title = titleMap[matchingPath];
+		}
+	}
+
 
 	return (
-		<header className="sticky top-0 z-40 border-b bg-white shadow-sm">
-			<div className="px-4 md:px-6 h-16 flex items-center justify-between">
+		<header className="glass-header sticky top-0 z-40 h-16 flex items-center justify-between px-8">
+			<div className="md:px-0 h-16 flex items-center justify-between w-full">
 				<div className="flex items-center gap-4">
-					{/* Left side content - can be used for breadcrumbs later */}
+					<h1 className="text-xl font-bold text-slate-800">{title}</h1>
 				</div>
 
 				{/* Right side - User Menu */}
 				<div className="flex items-center gap-4">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								variant="ghost"
-								size="sm"
-								className="flex items-center gap-2 hover:bg-secondary text-sm relative group"
-							>
-								<User className="h-5 w-5" />
-								<span>
-									{firstName} {lastName}
-									{isAdmin && (
-										<span className="ml-1 text-xs text-primary">- Admin</span>
-									)}
-								</span>
-								{/* Tambahkan chevron yang berputar saat dropdown terbuka */}
-								<svg
-									className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180"
-									xmlns="http://www.w3.org/2000/svg"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth="2"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									aria-hidden="true"
-									role="presentation"
-								>
-									<polyline points="6 9 12 15 18 9" />
-								</svg>
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="w-56">
-							<DropdownMenuLabel className="font-normal">
-								<div className="flex flex-col space-y-1">
-									<p className="text-sm font-medium">
-										{firstName} {lastName}
-									</p>
-									<p className="text-xs text-muted-foreground">{email}</p>
-								</div>
-							</DropdownMenuLabel>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem asChild>
-								<Link
-									href="/dashboard/profile"
-									className="flex items-center gap-2 cursor-pointer"
-								>
-									<User className="h-4 w-4" />
-									<span>Profile</span>
-								</Link>
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								className="text-red-600 focus:text-red-600 focus:bg-red-100"
-								disabled={status === "executing"}
-								onSelect={(e) => {
-									e.preventDefault();
-									execute();
-								}}
-							>
-								<div className="flex items-center gap-2 w-full">
-									{status === "executing" ? (
-										<Loader2 className="h-4 w-4 animate-spin" />
-									) : (
-										<LogOut className="h-4 w-4" />
-									)}
-									<span>
-										{status === "executing" ? "Logging out..." : "Logout"}
-									</span>
-								</div>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					<button className="p-2 text-slate-500 hover:text-primary hover:bg-primary/5 rounded-full transition-colors relative">
+						<span className="material-icons-round">notifications</span>
+						<span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white" />
+					</button>
+					<div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm cursor-pointer hover:border-primary/30 transition-colors mr-2">
+						<span className="material-icons-round text-slate-500 text-[20px]">
+							search
+						</span>
+						<input
+							className="bg-transparent border-none text-sm focus:outline-none w-32 placeholder-slate-400"
+							placeholder="Cari..."
+							type="text"
+						/>
+					</div>
+
 				</div>
+
+				{/* Notification & Search are now the only right-side items */}
 			</div>
 		</header>
 	);

@@ -56,6 +56,7 @@ export default {
 				"background-dark": "#022C22", // Emerald 950
 				"card-dark": "#134E4A", // Teal 900
 				"background-light": "#F0FDF4", // Emerald 50
+				"sidebar": "#0f3930", // Deep slate green for sidebar
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

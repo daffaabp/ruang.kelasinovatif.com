@@ -76,171 +76,247 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 	}, [form]);
 
 	return (
-		<div className="rounded-md border bg-white">
-			<Form {...form}>
-				<form onSubmit={handleSubmitWithAction} className="p-6 space-y-8">
-					<div className="grid gap-6">
-						{/* Personal Information */}
-						<div className="space-y-4">
-							<h2 className="text-lg font-semibold tracking-tight">
-								Informasi Pribadi
-							</h2>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<FormField
-									control={form.control}
-									name="firstName"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Nama Depan</FormLabel>
-											<FormControl>
-												<Input
-													placeholder="Masukkan nama depan"
-													{...field}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="lastName"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Nama Belakang</FormLabel>
-											<FormControl>
-												<Input
-													placeholder="Masukkan nama belakang"
-													{...field}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+		<div className="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden mb-8">
+			<div className="p-8">
+				<Form {...form}>
+					<form onSubmit={handleSubmitWithAction} className="space-y-8">
+						<div>
+							<div className="flex items-center gap-2 mb-6">
+								<span className="material-icons-round text-primary">badge</span>
+								<h4 className="text-lg font-bold text-slate-800">
+									Informasi Pribadi
+								</h4>
+							</div>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div className="space-y-2">
+									<FormField
+										control={form.control}
+										name="firstName"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel className="text-sm font-semibold text-slate-700">
+													Nama Depan
+												</FormLabel>
+												<FormControl>
+													<div className="relative">
+														<Input
+															placeholder="Nama Depan"
+															className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															{...field}
+															value={field.value || ""}
+														/>
+													</div>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="space-y-2">
+									<FormField
+										control={form.control}
+										name="lastName"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel className="text-sm font-semibold text-slate-700">
+													Nama Belakang
+												</FormLabel>
+												<FormControl>
+													<Input
+														placeholder="Nama Belakang"
+														className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+														{...field}
+														value={field.value || ""}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="space-y-2">
+									<FormField
+										control={form.control}
+										name="phone"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel className="text-sm font-semibold text-slate-700">
+													No. Telepon
+												</FormLabel>
+												<FormControl>
+													<div className="relative">
+														<span className="absolute left-4 top-2.5 text-slate-400 material-icons-round text-[20px]">
+															call
+														</span>
+														<Input
+															placeholder="08..."
+															className="w-full pl-11 pr-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															{...field}
+															value={field.value || ""}
+														/>
+													</div>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="space-y-2">
+									<FormField
+										control={form.control}
+										name="institution"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel className="text-sm font-semibold text-slate-700">
+													Institusi / Sekolah
+												</FormLabel>
+												<FormControl>
+													<div className="relative">
+														<span className="absolute left-4 top-2.5 text-slate-400 material-icons-round text-[20px]">
+															school
+														</span>
+														<Input
+															placeholder="Nama Sekolah / Institusi"
+															className="w-full pl-11 pr-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															{...field}
+															value={field.value || ""}
+														/>
+													</div>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+							</div>
+						</div>
+						<div>
+							<div className="h-px w-full bg-slate-100 mb-6"></div>
+							<div className="flex items-center gap-2 mb-6">
+								<span className="material-icons-round text-primary">
+									location_on
+								</span>
+								<h4 className="text-lg font-bold text-slate-800">
+									Alamat Lengkap
+								</h4>
+							</div>
+							<div className="space-y-6">
+								<div className="space-y-2">
+									<FormField
+										control={form.control}
+										name="address"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel className="text-sm font-semibold text-slate-700">
+													Alamat
+												</FormLabel>
+												<FormControl>
+													<Input
+														placeholder="Alamat lengkap..."
+														className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+														{...field}
+														value={field.value || ""}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								</div>
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+									<div className="space-y-2">
+										<FormField
+											control={form.control}
+											name="city"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel className="text-sm font-semibold text-slate-700">
+														Kota / Kabupaten
+													</FormLabel>
+													<FormControl>
+														<Input
+															placeholder="Nama Kota"
+															className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															{...field}
+															value={field.value || ""}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+									<div className="space-y-2">
+										<FormField
+											control={form.control}
+											name="province"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel className="text-sm font-semibold text-slate-700">
+														Provinsi
+													</FormLabel>
+													<FormControl>
+														<Input
+															placeholder="Nama Provinsi"
+															className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															{...field}
+															value={field.value || ""}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+									</div>
+								</div>
 							</div>
 						</div>
 
-						{/* Institution Information */}
-						<div className="space-y-4">
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<FormField
-									control={form.control}
-									name="phone"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>No. Telepon</FormLabel>
-											<FormControl>
-												<Input
-													placeholder="Masukkan nomor telepon"
-													{...field}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
+						<AlertError
+							show={!!form.formState.errors.root}
+							message={form.formState.errors.root?.message}
+							onClose={() => form.clearErrors("root")}
+						/>
+
+						<div className="pt-6 border-t border-slate-100 flex justify-between gap-3">
+							<Button
+								type="button"
+								variant="outline"
+								className="px-4 py-2.5 text-slate-600 font-semibold rounded-xl border-slate-200 hover:bg-slate-50 transition-all"
+							>
+								Ubah Password
+							</Button>
+							<div className="flex gap-3">
+								<Button
+									type="button"
+									variant="ghost"
+									className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all"
+									onClick={() => form.reset()}
+								>
+									Batal
+								</Button>
+								<Button
+									type="submit"
+									disabled={form.formState.isSubmitting}
+									className="px-8 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5 flex items-center gap-2"
+								>
+									{form.formState.isSubmitting ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											Menyimpan...
+										</>
+									) : (
+										<>
+											<span className="material-icons-round text-lg">save</span>
+											Simpan Perubahan
+										</>
 									)}
-								/>
-								<FormField
-									control={form.control}
-									name="institution"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Institusi</FormLabel>
-											<FormControl>
-												<Input
-													placeholder="Masukkan nama institusi"
-													{...field}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
+								</Button>
 							</div>
 						</div>
-
-						{/* Address Information */}
-						<div className="space-y-4">
-							<FormField
-								control={form.control}
-								name="address"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Alamat</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Masukkan alamat lengkap"
-												{...field}
-												value={field.value || ""}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-								<FormField
-									control={form.control}
-									name="city"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Kota</FormLabel>
-											<FormControl>
-												<Input
-													placeholder="Masukkan nama kota"
-													{...field}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="province"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Provinsi</FormLabel>
-											<FormControl>
-												<Input
-													placeholder="Masukkan nama provinsi"
-													{...field}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-						</div>
-					</div>
-
-					<AlertError
-						show={!!form.formState.errors.root}
-						message={form.formState.errors.root?.message}
-						onClose={() => form.clearErrors("root")}
-					/>
-
-					<div className="flex justify-end">
-						<Button type="submit" disabled={form.formState.isSubmitting}>
-							{form.formState.isSubmitting ? (
-								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Menyimpan...
-								</>
-							) : (
-								"Simpan Perubahan"
-							)}
-						</Button>
-					</div>
-				</form>
-			</Form>
+					</form>
+				</Form>
+			</div>
 		</div>
 	);
 }

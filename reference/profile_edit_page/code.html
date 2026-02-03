@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>KelasInovatif - Pengaturan Profil</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#10B981",
+                        "primary-hover": "#059669",
+                        "deep-green": "#064E3B",
+                        "background-light": "#F0FDF4",
+                        "background-dark": "#022C22",
+                        "card-dark": "#134E4A",
+                        "sidebar": "#0f3930" // A deep slate green for sidebar
+                    },
+                    fontFamily: {
+                        sans: ["'Plus Jakarta Sans'", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem",
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(16, 185, 129, 0.3)',
+                        'card': '0 10px 30px -5px rgba(0, 0, 0, 0.05)',
+                    }
+                },
+            },
+        };
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #022C22;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #10B981;
+            border-radius: 4px;
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .pattern-bg {
+            background-color: #F8FAFC;
+            background-image: radial-gradient(#10B981 0.5px, transparent 0.5px), radial-gradient(#10B981 0.5px, #F8FAFC 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-attachment: fixed;
+            opacity: 0.8;
+        }
+
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            border-color: #10B981;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex pattern-bg">
+    <aside
+        class="w-64 bg-sidebar text-white hidden md:flex flex-col fixed h-full z-20 shadow-xl border-r border-white/10">
+        <div class="h-16 flex items-center px-6 border-b border-white/10 bg-black/10">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-3xl">school</span>
+                <span class="text-white text-xl font-bold tracking-tight">KelasInovatif</span>
+            </div>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors group"
+                href="#">
+                <span
+                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">dashboard</span>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors group"
+                href="#">
+                <span
+                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">book</span>
+                <span class="font-medium">Materi Saya</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors group"
+                href="#">
+                <span
+                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">schedule</span>
+                <span class="font-medium">Jadwal Kelas</span>
+            </a>
+            <div class="pt-6 pb-2">
+                <p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Pengaturan</p>
+            </div>
+            <a class="flex items-center gap-3 px-4 py-3 bg-primary/20 text-white rounded-lg transition-colors border-l-4 border-primary shadow-sm"
+                href="#">
+                <span class="material-symbols-outlined text-primary">person</span>
+                <span class="font-medium">Profil</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors group"
+                href="#">
+                <span
+                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">lock</span>
+                <span class="font-medium">Keamanan</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors group"
+                href="#">
+                <span
+                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">payments</span>
+                <span class="font-medium">Pembayaran</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10 bg-black/20">
+            <div class="flex items-center gap-3 mb-4">
+                <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-emerald-700 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                    NR</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-white truncate">Nur Rahman</p>
+                    <p class="text-xs text-slate-400 truncate">Siswa Premium</p>
+                </div>
+            </div>
+            <button
+                class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-red-200 hover:text-white hover:bg-red-500/20 rounded-lg transition-colors">
+                <span class="material-symbols-outlined text-lg">logout</span>
+                Keluar
+            </button>
+        </div>
+    </aside>
+    <main class="flex-1 md:ml-64 flex flex-col min-h-screen relative z-10">
+        <div class="md:hidden glass-header sticky top-0 z-30 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-2xl">school</span>
+                <span class="text-slate-800 text-lg font-bold">KelasInovatif</span>
+            </div>
+            <button class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+        </div>
+        <header class="glass-header h-16 sticky top-0 z-30 hidden md:flex items-center justify-between px-8">
+            <h1 class="text-xl font-bold text-slate-800">Pengaturan Akun</h1>
+            <div class="flex items-center gap-4">
+                <button
+                    class="p-2 text-slate-500 hover:text-primary hover:bg-primary/5 rounded-full transition-colors relative">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                </button>
+                <div
+                    class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm cursor-pointer hover:border-primary/30 transition-colors">
+                    <span class="material-symbols-outlined text-slate-500">search</span>
+                    <input class="bg-transparent border-none text-sm focus:ring-0 w-32 placeholder-slate-400"
+                        placeholder="Cari..." type="text" />
+                </div>
+            </div>
+        </header>
+        <div class="p-6 lg:p-10 max-w-5xl mx-auto w-full">
+            <div class="mb-8">
+                <nav class="flex text-sm text-slate-500 mb-2">
+                    <a class="hover:text-primary transition-colors" href="#">Home</a>
+                    <span class="mx-2">/</span>
+                    <span class="text-slate-800 font-medium">Profil</span>
+                </nav>
+                <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Edit Profil</h2>
+                <p class="text-slate-500 mt-1">Kelola informasi pribadi dan preferensi akun Anda.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden mb-8">
+                <div class="h-32 bg-gradient-to-r from-deep-green to-emerald-600 relative overflow-hidden">
+                    <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+                    <div class="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
+                </div>
+                <div class="px-8 pb-8">
+                    <div class="flex flex-col md:flex-row items-start md:items-end -mt-12 gap-6 mb-6">
+                        <div class="relative group">
+                            <div class="w-24 h-24 rounded-2xl bg-white p-1 shadow-lg">
+                                <div
+                                    class="w-full h-full rounded-xl bg-slate-200 flex items-center justify-center text-slate-400 overflow-hidden relative">
+                                    <span class="material-symbols-outlined text-4xl">person</span>
+                                    <div
+                                        class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                        <span class="material-symbols-outlined text-white">camera_alt</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-1 mb-2">
+                            <h3 class="text-2xl font-bold text-slate-800">Nur Rahman Aziz</h3>
+                            <p class="text-slate-500">nur.rahman@example.com</p>
+                        </div>
+                        <div class="mb-2">
+                            <button
+                                class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-sm transition-colors border border-slate-200">
+                                Ubah Password
+                            </button>
+                        </div>
+                    </div>
+                    <div class="h-px w-full bg-slate-100 mb-8"></div>
+                    <form action="#" class="space-y-8">
+                        <div>
+                            <div class="flex items-center gap-2 mb-6">
+                                <span class="material-symbols-outlined text-primary">badge</span>
+                                <h4 class="text-lg font-bold text-slate-800">Informasi Pribadi</h4>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-slate-700">Nama Depan</label>
+                                    <div class="relative">
+                                        <input
+                                            class="form-input w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400"
+                                            type="text" value="Nur Rahman" />
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-slate-700">Nama Belakang</label>
+                                    <input
+                                        class="form-input w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400"
+                                        type="text" value="Aziz" />
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-slate-700">No. Telepon</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-4 top-2.5 text-slate-400 material-symbols-outlined text-[20px]">call</span>
+                                        <input
+                                            class="form-input w-full pl-11 pr-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400"
+                                            type="tel" value="085157249900" />
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-slate-700">Institusi / Sekolah</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-4 top-2.5 text-slate-400 material-symbols-outlined text-[20px]">school</span>
+                                        <input
+                                            class="form-input w-full pl-11 pr-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400"
+                                            type="text" value="Kelas Inovatif" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="h-px w-full bg-slate-100 mb-6"></div>
+                            <div class="flex items-center gap-2 mb-6">
+                                <span class="material-symbols-outlined text-primary">location_on</span>
+                                <h4 class="text-lg font-bold text-slate-800">Alamat Lengkap</h4>
+                            </div>
+                            <div class="space-y-6">
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-slate-700">Alamat</label>
+                                    <textarea
+                                        class="form-input w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400"
+                                        rows="2">,,,</textarea>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label class="text-sm font-semibold text-slate-700">Kota / Kabupaten</label>
+                                        <input
+                                            class="form-input w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400"
+                                            type="text" value="Cilacap" />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-sm font-semibold text-slate-700">Provinsi</label>
+                                        <div class="relative">
+                                            <select
+                                                class="form-select w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 cursor-pointer appearance-none">
+                                                <option>Jawa Tengah</option>
+                                                <option>Jawa Barat</option>
+                                                <option>Jawa Timur</option>
+                                                <option>DKI Jakarta</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
+                            <button
+                                class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all"
+                                type="button">
+                                Batal
+                            </button>
+                            <button
+                                class="px-8 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5 flex items-center gap-2"
+                                type="submit">
+                                <span class="material-symbols-outlined text-lg">save</span>
+                                Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <footer class="text-center text-sm text-slate-400 py-6">
+                <p>© 2025 Kelas Inovatif. All rights reserved.</p>
+                <p class="text-xs mt-1">Platform Pembelajaran AI Pertama di Indonesia</p>
+            </footer>
+        </div>
+    </main>
+
+</body>
+
+</html>
