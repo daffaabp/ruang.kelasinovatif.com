@@ -1,0 +1,1017 @@
+Project Path: prompt
+
+Source Tree:
+
+```
+prompt
+├── page.tsx
+├── prisma.ts
+├── prompt-actions.ts
+├── prompt-add-modal.tsx
+├── prompt-delete-dialog.tsx
+├── prompt-edit-modal.tsx
+├── prompt-table.tsx
+├── prompt-types.ts
+├── prompt-validations.ts
+├── safe-action.ts
+└── schema.md
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\page.tsx`:
+
+```tsx
+import { Suspense } from "react";
+import { PromptTable } from "./prompt-table";
+import { PromptAddModal } from "./prompt-add-modal";
+import { getPromptsAction } from "./prompt-actions";
+import type { PaginatedResult } from "./prompt-types";
+
+export default async function PromptsPage() {
+	// 1. Data Fetching
+	const result = await getPromptsAction({
+		page: 1,
+		perPage: 5,
+	});
+
+	if (!result || !("data" in result) || !result.data) {
+		throw new Error("Failed to fetch prompts");
+	}
+
+	const paginatedResult = result.data as PaginatedResult;
+
+	// 2. Component Layout
+	return (
+		<div className="container mx-auto py-6 sm:py-10">
+			{/* Header Section */}
+			<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-4 sm:px-0">
+				<div>
+					<h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+						Prompts
+					</h1>
+					<p className="text-sm text-muted-foreground mt-1">
+						Kelola prompt untuk berbagai keperluan
+					</p>
+				</div>
+				<PromptAddModal prompts={paginatedResult} />
+			</div>
+
+			{/* Table Section with Loading State */}
+			<div className="mt-6">
+				<Suspense
+					fallback={
+						<div className="flex items-center justify-center h-32">
+							<div className="text-muted-foreground">Memuat...</div>
+						</div>
+					}
+				>
+					<PromptTable initialData={paginatedResult} />
+				</Suspense>
+			</div>
+		</div>
+	);
+}
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\prisma.ts`:
+
+```ts
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+
+export const prisma = globalForPrisma.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\prompt-actions.ts`:
+
+```ts
+"use server";
+import { actionClient } from "./safe-action";
+import { prisma } from "./prisma";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { promptFormSchema, updatePromptSchema } from "./prompt-validations";
+import { returnValidationErrors } from "next-safe-action";
+
+export type PaginatedResult = {
+	data: Array<{
+		id: string;
+		title: string;
+		content: string;
+		createdAt: Date;
+		updatedAt: Date;
+	}>;
+	total: number;
+	pageCount: number;
+};
+
+export const getPromptsAction = actionClient
+	.schema(
+		z.object({
+			page: z.number().min(1).default(1),
+			perPage: z.number().min(1).default(5),
+			search: z.string().optional(),
+			sortField: z.enum(["title", "updatedAt"]).optional(),
+			sortOrder: z.enum(["asc", "desc"]).optional(),
+		}),
+	)
+	.action(async ({ parsedInput }): Promise<PaginatedResult> => {
+		try {
+			const {
+				page,
+				perPage,
+				search,
+				sortField = "updatedAt",
+				sortOrder = "desc",
+			} = parsedInput;
+			const skip = (page - 1) * perPage;
+
+			const where = search
+				? {
+						title: {
+							contains: search,
+							mode: "insensitive" as const,
+						},
+					}
+				: {};
+
+			const [prompts, total] = await Promise.all([
+				prisma.prompt.findMany({
+					where,
+					skip,
+					take: perPage,
+					orderBy: {
+						[sortField]: sortOrder,
+					},
+				}),
+				prisma.prompt.count({ where }),
+			]);
+
+			const result: PaginatedResult = {
+				data: prompts,
+				total,
+				pageCount: Math.ceil(total / perPage),
+			};
+
+			return result;
+		} catch (error) {
+			console.error("Get prompts error:", error);
+			throw error;
+		}
+	});
+
+export const createPromptAction = actionClient
+	.schema(promptFormSchema)
+	.action(async ({ parsedInput }) => {
+		try {
+			const newPrompt = await prisma.prompt.create({
+				data: {
+					title: parsedInput.title,
+					content: parsedInput.content,
+				},
+			});
+
+			return {
+				success: true,
+				data: {
+					...newPrompt,
+					createdAt: new Date(newPrompt.createdAt),
+					updatedAt: new Date(newPrompt.updatedAt),
+				},
+			};
+		} catch (error) {
+			console.error("Create prompt error:", error);
+
+			if (error instanceof Error) {
+				return { success: false, error: error.message };
+			}
+
+			return {
+				success: false,
+				error: "Gagal membuat prompt karena kesalahan database",
+			};
+		}
+	});
+
+export const deletePromptAction = actionClient
+	.schema(z.object({ id: z.string() }))
+	.action(async ({ parsedInput }) => {
+		try {
+			await prisma.$connect();
+
+			await prisma.prompt.delete({
+				where: { id: parsedInput.id },
+			});
+
+			await prisma.$disconnect();
+			revalidatePath("/dashboard/prompt");
+			return {
+				data: { message: "Prompt berhasil dihapus" },
+				error: null,
+			};
+		} catch (error) {
+			await prisma.$disconnect();
+			console.error("Delete error:", error);
+			return {
+				data: null,
+				error: { serverError: "Gagal menghapus prompt" },
+			};
+		}
+	});
+
+export const updatePromptAction = actionClient
+	.schema(updatePromptSchema)
+	.action(async ({ parsedInput }) => {
+		try {
+			await prisma.$connect();
+
+			const prompt = await prisma.prompt.findUnique({
+				where: { id: parsedInput.id },
+			});
+
+			if (!prompt) {
+				returnValidationErrors(updatePromptSchema, {
+					_errors: ["Prompt tidak ditemukan"],
+				});
+			}
+
+			await prisma.prompt.update({
+				where: { id: parsedInput.id },
+				data: {
+					title: parsedInput.title,
+					content: parsedInput.content,
+					updatedAt: new Date(),
+				},
+			});
+
+			await prisma.$disconnect();
+			revalidatePath("/dashboard/prompt");
+			return {
+				message: "Prompt berhasil diperbarui",
+			};
+		} catch (error) {
+			await prisma.$disconnect();
+			console.error("Update error:", error);
+			return returnValidationErrors(updatePromptSchema, {
+				_errors: ["Gagal memperbarui prompt"],
+			});
+		}
+	});
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\prompt-add-modal.tsx`:
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useHookFormOptimisticAction } from "@next-safe-action/adapter-react-hook-form/hooks";
+import { toast } from "sonner";
+import { Loader2, Plus } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+import { createPromptAction } from "./prompt-actions";
+import { promptFormSchema } from "./prompt-validations";
+import type { PaginatedResult } from "./prompt-types";
+
+export function PromptAddModal({ prompts }: { prompts: PaginatedResult }) {
+	const [open, setOpen] = useState(false);
+
+	const { form, handleSubmitWithAction, resetFormAndAction } =
+		useHookFormOptimisticAction(
+			createPromptAction,
+			zodResolver(promptFormSchema),
+			{
+				actionProps: {
+					currentState: prompts,
+					updateFn: (state, input) => ({
+						...state,
+						data: [
+							{
+								id: Date.now().toString(), // ID temporary
+								title: input.title,
+								content: input.content,
+								createdAt: new Date(),
+								updatedAt: new Date(),
+							},
+							...state.data,
+						],
+						total: state.total + 1,
+						pageCount: Math.ceil((state.total + 1) / 5),
+					}),
+					onSuccess: (result) => {
+						if (result && "data" in result && result.data?.success) {
+							setOpen(false);
+							toast.success("Prompt berhasil dibuat");
+							resetFormAndAction();
+						} else {
+							toast.error(
+								typeof result?.data?.error === "string"
+									? result.data.error
+									: "Gagal membuat prompt",
+							);
+						}
+					},
+					onError: (error) => {
+						toast.error(
+							typeof error === "string" ? error : "Gagal membuat prompt",
+						);
+					},
+				},
+				formProps: {
+					defaultValues: {
+						title: "",
+						content: "",
+					},
+				},
+			},
+		);
+
+	return (
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogTrigger asChild>
+				<Button>
+					<Plus className="mr-2 h-4 w-4" />
+					Tambah Prompt
+				</Button>
+			</DialogTrigger>
+			<DialogContent className="sm:max-w-[500px] p-0 sm:p-6">
+				<DialogHeader className="px-4 sm:px-0 pt-4 sm:pt-0">
+					<DialogTitle>Add New Prompt</DialogTitle>
+					<DialogDescription>
+						Buat prompt baru dengan mengisi form di bawah ini.
+					</DialogDescription>
+				</DialogHeader>
+				<Form {...form}>
+					<form
+						onSubmit={handleSubmitWithAction}
+						className="space-y-4 px-4 sm:px-0 pb-4 sm:pb-0"
+					>
+						<FormField
+							control={form.control}
+							name="title"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Title</FormLabel>
+									<FormControl>
+										<Input placeholder="Enter prompt title" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="content"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Content</FormLabel>
+									<FormControl>
+										<Textarea
+											placeholder="Enter prompt content"
+											className="min-h-[200px]"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<div className="flex justify-end">
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Adding...
+									</>
+								) : (
+									"Add Prompt"
+								)}
+							</Button>
+						</div>
+					</form>
+				</Form>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\prompt-delete-dialog.tsx`:
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import type { Prompt } from "@prisma/client";
+import { useOptimisticAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
+import { Loader2, Trash2 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import { deletePromptAction } from "./prompt-actions";
+import type { PaginatedResult } from "./prompt-types";
+
+interface PromptDeleteDialogProps {
+	prompt: Prompt;
+	tableData: PaginatedResult;
+	onDataChange: (data: PaginatedResult) => void;
+}
+
+export function PromptDeleteDialog({
+	prompt,
+	tableData,
+	onDataChange,
+}: PromptDeleteDialogProps) {
+	const [open, setOpen] = useState(false);
+
+	const { execute, isExecuting } = useOptimisticAction(deletePromptAction, {
+		currentState: tableData,
+		updateFn: (state) => {
+			const newData = state.data.filter((p) => p.id !== prompt.id);
+			return {
+				data: newData,
+				total: state.total - 1,
+				pageCount: Math.ceil((state.total - 1) / 5),
+			};
+		},
+		onSuccess: (result) => {
+			if (result && "data" in result && result.data?.data) {
+				toast.success(result.data.data.message);
+				setOpen(false);
+			} else if (result?.data?.error) {
+				toast.error(result.data.error.serverError || "Gagal menghapus prompt");
+			}
+		},
+		onError: (error) => {
+			if (error && typeof error === "object" && "error" in error) {
+				const err = error as { error: { serverError?: string } };
+				toast.error(err.error?.serverError || "Gagal menghapus prompt");
+			} else {
+				toast.error("Gagal menghapus prompt");
+			}
+		},
+		onSettled: () => {
+			onDataChange(tableData);
+		},
+	});
+
+	const handleDelete = () => {
+		execute({ id: prompt.id });
+	};
+
+	return (
+		<AlertDialog open={open} onOpenChange={setOpen}>
+			<AlertDialogTrigger asChild>
+				<Button variant="ghost" size="icon">
+					<Trash2 className="h-4 w-4" />
+				</Button>
+			</AlertDialogTrigger>
+			<AlertDialogContent className="sm:max-w-[400px] p-0 sm:p-6">
+				<AlertDialogHeader className="px-4 sm:px-0 pt-4 sm:pt-0">
+					<AlertDialogTitle>Delete Prompt</AlertDialogTitle>
+					<AlertDialogDescription>
+						Are you sure you want to delete &ldquo;{prompt.title}&rdquo;? This
+						action cannot be undone.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter className="px-4 sm:px-0 pb-4 sm:pb-0 flex-col sm:flex-row gap-2 sm:gap-0">
+					<AlertDialogCancel className="mt-0">Cancel</AlertDialogCancel>
+					<AlertDialogAction onClick={handleDelete} disabled={isExecuting}>
+						{isExecuting ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Deleting...
+							</>
+						) : (
+							"Delete"
+						)}
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+	);
+}
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\prompt-edit-modal.tsx`:
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import type { Prompt } from "@prisma/client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useHookFormOptimisticAction } from "@next-safe-action/adapter-react-hook-form/hooks";
+import { toast } from "sonner";
+import { Loader2, Pencil } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+import { updatePromptAction } from "./prompt-actions";
+import { updatePromptSchema } from "./prompt-validations";
+import type { PaginatedResult } from "./prompt-types";
+
+interface PromptEditModalProps {
+	prompt: Prompt;
+	tableData: PaginatedResult;
+	onDataChange: (data: PaginatedResult) => void;
+}
+
+export function PromptEditModal({
+	prompt,
+	tableData,
+	onDataChange,
+}: PromptEditModalProps) {
+	const [open, setOpen] = useState(false);
+
+	const { form, handleSubmitWithAction } = useHookFormOptimisticAction(
+		updatePromptAction,
+		zodResolver(updatePromptSchema),
+		{
+			actionProps: {
+				currentState: tableData,
+				updateFn: (state, input) => {
+					const newData = state.data.map((p) =>
+						p.id === input.id
+							? {
+									...p,
+									title: input.title,
+									content: input.content,
+									updatedAt: new Date(),
+								}
+							: p,
+					);
+					return {
+						...state,
+						data: newData,
+					};
+				},
+				onSuccess: (result) => {
+					if (result && "data" in result && result.data?.message) {
+						toast.success(result.data.message);
+						setOpen(false);
+						form.reset();
+						onDataChange(tableData);
+					} else {
+						toast.error("Gagal memperbarui prompt");
+					}
+				},
+				onError: (error) => {
+					if (error && typeof error === "object" && "error" in error) {
+						const err = error as { error: { serverError?: string } };
+						toast.error(err.error?.serverError || "Gagal memperbarui prompt");
+					} else {
+						toast.error("Gagal memperbarui prompt");
+					}
+				},
+			},
+			formProps: {
+				defaultValues: {
+					id: prompt.id,
+					title: prompt.title,
+					content: prompt.content,
+				},
+			},
+		},
+	);
+
+	return (
+		<Dialog open={open} onOpenChange={setOpen}>
+			<DialogTrigger asChild>
+				<Button variant="ghost" size="icon">
+					<Pencil className="h-4 w-4" />
+				</Button>
+			</DialogTrigger>
+			<DialogContent className="sm:max-w-[500px] p-0 sm:p-6">
+				<DialogHeader className="px-4 sm:px-0 pt-4 sm:pt-0">
+					<DialogTitle>Edit Prompt</DialogTitle>
+					<DialogDescription>
+						Edit prompt dengan mengisi form di bawah ini.
+					</DialogDescription>
+				</DialogHeader>
+				<Form {...form}>
+					<form
+						onSubmit={handleSubmitWithAction}
+						className="space-y-4 px-4 sm:px-0 pb-4 sm:pb-0"
+					>
+						<input type="hidden" {...form.register("id")} />
+						<FormField
+							control={form.control}
+							name="title"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Title</FormLabel>
+									<FormControl>
+										<Input placeholder="Enter prompt title" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="content"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Content</FormLabel>
+									<FormControl>
+										<Textarea
+											placeholder="Enter prompt content"
+											className="min-h-[100px]"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<div className="flex justify-end">
+							<Button type="submit" disabled={form.formState.isSubmitting}>
+								{form.formState.isSubmitting ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Updating...
+									</>
+								) : (
+									"Update"
+								)}
+							</Button>
+						</div>
+					</form>
+				</Form>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\prompt-table.tsx`:
+
+```tsx
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PromptEditModal } from "./prompt-edit-modal";
+import { PromptDeleteDialog } from "./prompt-delete-dialog";
+import { ArrowUpDown, Loader2, Search } from "lucide-react";
+import { getPromptsAction } from "./prompt-actions";
+import type { PaginatedResult } from "./prompt-types";
+import { useDebounce } from "@/hooks/use-debounce";
+
+const defaultTableData: PaginatedResult = {
+	data: [],
+	total: 0,
+	pageCount: 0,
+};
+
+type SortField = "title" | "updatedAt";
+type SortOrder = "asc" | "desc";
+
+export function PromptTable({ initialData }: { initialData: PaginatedResult }) {
+	const [loading, setLoading] = useState(false);
+	const [search, setSearch] = useState("");
+	const [page, setPage] = useState(1);
+	const [tableData, setTableData] = useState<PaginatedResult>(initialData);
+	const [sortField, setSortField] = useState<SortField>("updatedAt");
+	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+
+	const debouncedSearch = useDebounce(search, 500);
+
+	const handleSort = (field: SortField) => {
+		if (field === sortField) {
+			setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+		} else {
+			setSortField(field);
+			setSortOrder("asc");
+		}
+	};
+
+	const fetchData = useCallback(async () => {
+		setLoading(true);
+		try {
+			const result = await getPromptsAction({
+				page,
+				perPage: 5,
+				search: debouncedSearch,
+				sortField,
+				sortOrder,
+			});
+
+			if (result && "data" in result && result.data) {
+				setTableData(result.data);
+			} else {
+				setTableData(defaultTableData);
+			}
+		} catch (error) {
+			console.error("Error fetching prompts:", error);
+			setTableData(defaultTableData);
+		} finally {
+			setLoading(false);
+		}
+	}, [page, debouncedSearch, sortField, sortOrder]);
+
+	useEffect(() => {
+		fetchData();
+	}, [fetchData]);
+
+	useEffect(() => {
+		if (!loading) {
+			setTableData((prev) => ({ ...prev }));
+		}
+	}, [loading]);
+
+	const handleDataChange = useCallback(() => {
+		fetchData();
+	}, [fetchData]);
+
+	return (
+		<div className="space-y-4 px-4 sm:px-0">
+			<div className="flex items-center gap-2">
+				<Search className="h-4 w-4 text-muted-foreground" />
+				<Input
+					placeholder="Cari berdasarkan judul..."
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					className="max-w-sm"
+				/>
+			</div>
+			<div className="rounded-md border bg-white">
+				<div className="overflow-x-auto">
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead className="w-[180px] lg:w-[200px]">
+									<Button
+										variant="ghost"
+										onClick={() => handleSort("title")}
+										className="flex items-center space-x-2 hover:bg-transparent"
+									>
+										<span>Title</span>
+										<ArrowUpDown
+											className={`h-4 w-4 ${sortField === "title" ? "text-primary" : ""}`}
+										/>
+									</Button>
+								</TableHead>
+								<TableHead className="hidden md:table-cell min-w-[200px] lg:min-w-[300px] max-w-[400px] xl:max-w-[500px]">
+									Content
+								</TableHead>
+								<TableHead className="w-[120px] lg:w-[150px]">
+									<Button
+										variant="ghost"
+										onClick={() => handleSort("updatedAt")}
+										className="flex items-center space-x-2 hover:bg-transparent whitespace-nowrap"
+									>
+										<span>Last Updated</span>
+										<ArrowUpDown
+											className={`h-4 w-4 ${sortField === "updatedAt" ? "text-primary" : ""}`}
+										/>
+									</Button>
+								</TableHead>
+								<TableHead className="w-[100px] text-right">Actions</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{loading ? (
+								<TableRow>
+									<TableCell colSpan={4} className="h-24 text-center">
+										<div className="flex items-center justify-center">
+											<Loader2 className="h-6 w-6 animate-spin" />
+										</div>
+									</TableCell>
+								</TableRow>
+							) : tableData.data.length > 0 ? (
+								tableData.data.map((prompt) => (
+									<TableRow key={prompt.id}>
+										<TableCell className="font-medium">
+											<div className="truncate max-w-[180px] lg:max-w-[200px]">
+												{prompt.title}
+											</div>
+										</TableCell>
+										<TableCell className="hidden md:table-cell">
+											<div className="truncate max-w-[400px] xl:max-w-[500px]">
+												{prompt.content}
+											</div>
+										</TableCell>
+										<TableCell className="whitespace-nowrap">
+											{prompt.updatedAt.toLocaleDateString()}
+										</TableCell>
+										<TableCell className="text-right space-x-2">
+											<PromptEditModal
+												prompt={prompt}
+												tableData={tableData}
+												onDataChange={handleDataChange}
+											/>
+											<PromptDeleteDialog
+												prompt={prompt}
+												tableData={tableData}
+												onDataChange={handleDataChange}
+											/>
+										</TableCell>
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell colSpan={4} className="h-24 text-center">
+										No prompts found.
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				</div>
+			</div>
+			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-md border">
+				<div className="text-sm text-muted-foreground w-full sm:w-auto text-center sm:text-left order-2 sm:order-1">
+					{tableData.total} prompt(s) ditemukan.
+				</div>
+				<div className="flex items-center justify-center w-full sm:w-auto gap-2 order-1 sm:order-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setPage((p) => Math.max(1, p - 1))}
+						disabled={page === 1 || loading}
+					>
+						Previous
+					</Button>
+					<div className="text-sm font-medium min-w-[100px] text-center">
+						Page {page} of {tableData.pageCount}
+					</div>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setPage((p) => Math.min(tableData.pageCount, p + 1))}
+						disabled={page === tableData.pageCount || loading}
+					>
+						Next
+					</Button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\prompt-types.ts`:
+
+```ts
+export type PaginatedResult = {
+	data: Array<{
+		id: string;
+		title: string;
+		content: string;
+		createdAt: Date;
+		updatedAt: Date;
+	}>;
+	total: number;
+	pageCount: number;
+};
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\prompt-validations.ts`:
+
+```ts
+import { z } from "zod";
+
+export const promptFormSchema = z.object({
+	title: z.string().min(1, "Title is required"),
+	content: z.string().min(10, "Content must be at least 10 characters"),
+});
+
+export const updatePromptSchema = promptFormSchema.extend({
+	id: z.string().min(1, "Prompt ID is required"),
+});
+
+export const deletePromptSchema = z.object({
+	id: z.string().min(1, "Prompt ID is required"),
+});
+
+export type PromptFormValues = z.infer<typeof promptFormSchema>;
+export type UpdatePromptValues = z.infer<typeof updatePromptSchema>;
+export type DeletePromptValues = z.infer<typeof deletePromptSchema>;
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\safe-action.ts`:
+
+```ts
+import {
+	createSafeActionClient,
+	DEFAULT_SERVER_ERROR_MESSAGE,
+} from "next-safe-action";
+
+export class MyCustomError extends Error {}
+
+export const actionClient = createSafeActionClient({
+	// Can also be an async function.
+	handleServerError(e) {
+		// Log to console.
+		console.error("Action error:", e.message);
+
+		// In this case, we can use the 'MyCustomError` class to unmask errors
+		// and return them with their actual messages to the client.
+		if (e instanceof MyCustomError) {
+			return e.message;
+		}
+
+		// Every other error that occurs will be masked with the default message.
+		return DEFAULT_SERVER_ERROR_MESSAGE;
+	},
+});
+
+```
+
+`\\?\E:\_app\prompt-manager-next\src\app\dashboard\prompt\schema.md`:
+
+```md
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ini adalah aplikasi untuk pengelola prompt management untuk ai
+
+model Prompt {
+  id        String   @id @default(cuid())
+  title     String   @db.VarChar(255)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+```

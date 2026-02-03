@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  hashedPassword String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  tokens         UserToken[]
+  UserProfile    UserProfile[]
+  UserCourses    UserCourses[]
+
+  @@map("users")
+}
+
+model UserToken {
+  id        String    @id @default(cuid())
+  userId    String
+  type      TokenType
+  token     String
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_tokens")
+}
+
+enum TokenType {
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String
+  firstName   String
+  lastName    String
+  phone       String
+  institution String
+  address     String
+  city        String
+  province    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+enum CourseType {
+  EBOOK
+  VIDEO
+}
+
+model Courses {
+  id                String          @id @default(cuid())
+  courseName        String
+  courseDescription String
+  price            String?         // Harga dalam Rupiah, null untuk course gratis
+  linkPayment      String?         // Link pembayaran, null untuk course gratis
+  UserCourses       UserCourses[]
+  CourseDetails     CourseDetails[]
+
+  @@map("courses")
+}
+
+model CourseDetails {
+  id          String     @id @default(cuid())
+  courseId    String
+  title       String
+  description String
+  courseType  CourseType
+  videoUrl    String?
+  downloadUrl String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  course      Courses    @relation(fields: [courseId], references: [id], onDelete: Restrict)
+
+  @@map("course_details")
+}
+
+model UserCourses {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Courses  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("user_courses")
+}
