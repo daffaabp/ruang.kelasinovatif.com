@@ -3,20 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 
 import { AlertError } from "@/components/shared/alert-error";
 import { PasswordInput } from "@/components/shared/password-input";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import {
 	Form,
 	FormControl,
@@ -79,89 +71,99 @@ export function RegisterForm() {
 	}
 
 	return (
-		<Card className="mx-auto max-w-sm w-full">
-			<CardHeader className="space-y-3">
-				<div className="flex justify-center">
-					<div className="relative w-40 h-12">
-						<Image
-							src="/images/kelasinovatif-clean.png"
-							alt="Kelas Inovatif Logo"
-							fill
-							className="object-contain"
-							priority
-						/>
+		<div className="bg-white rounded-2xl p-8 md:p-10 transform transition-all hover:scale-[1.005] duration-500">
+			<div className="flex items-center justify-center gap-2 mb-8">
+				<span className="material-icons-round text-primary text-4xl">
+					school
+				</span>
+				<span className="text-gray-900 text-2xl font-extrabold tracking-tight">
+					KelasInovatif
+				</span>
+			</div>
+			<div className="text-center mb-8">
+				<h1 className="text-2xl font-bold text-gray-900 mb-2">Daftar</h1>
+				<p className="text-gray-500 text-sm">
+					Buat akun untuk memulai pembelajaran
+				</p>
+			</div>
+			<Form {...form}>
+				<form onSubmit={handleSubmitWithAction} className="space-y-5">
+					<FormField
+						control={form.control}
+						name="email"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel className="block text-sm font-semibold text-gray-700 mb-1.5">
+									Email
+								</FormLabel>
+								<FormControl>
+									<Input
+										placeholder="johndoe@mail.com"
+										type="email"
+										autoComplete="email"
+										className="block w-full px-4 py-3 rounded-xl border-gray-200 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-primary sm:text-sm transition-colors duration-200 ease-in-out bg-gray-50/50 focus:bg-white"
+										{...field}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="password"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel className="block text-sm font-semibold text-gray-700 mb-1.5">
+									Kata Sandi
+								</FormLabel>
+								<FormControl>
+									<div className="relative">
+										<PasswordInput
+											autoComplete="new-password"
+											className="block w-full px-4 py-3 rounded-xl border-gray-200 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-primary sm:text-sm transition-colors duration-200 ease-in-out bg-gray-50/50 focus:bg-white pr-10"
+											{...field}
+										/>
+									</div>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<AlertError
+						show={!!form.formState.errors.root}
+						message={form.formState.errors.root?.message}
+						onClose={() => form.clearErrors("root")}
+					/>
+					<div className="pt-2">
+						<Button
+							type="submit"
+							disabled={form.formState.isSubmitting}
+							className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:-translate-y-0.5"
+						>
+							{form.formState.isSubmitting ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Daftar
+								</>
+							) : (
+								"Daftar"
+							)}
+						</Button>
 					</div>
-				</div>
-				<div className="space-y-1.5">
-					<CardTitle className="text-2xl">Register</CardTitle>
-					<CardDescription>Create an account to get started</CardDescription>
-				</div>
-			</CardHeader>
-			<CardContent>
-				<Form {...form}>
-					<form onSubmit={handleSubmitWithAction} className="space-y-8">
-						<div className="grid gap-4">
-							<FormField
-								control={form.control}
-								name="email"
-								render={({ field }) => (
-									<FormItem className="space-y-1">
-										<FormLabel htmlFor="email">Email</FormLabel>
-										<FormControl>
-											<Input
-												id="email"
-												placeholder="johndoe@mail.com"
-												type="email"
-												autoComplete="email"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="password"
-								render={({ field }) => (
-									<FormItem className="space-y-1">
-										<FormLabel htmlFor="password">Password</FormLabel>
-										<FormControl>
-											<PasswordInput
-												id="password"
-												autoComplete="new-password"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<AlertError
-								show={!!form.formState.errors.root}
-								message={form.formState.errors.root?.message}
-								onClose={() => form.clearErrors("root")}
-							/>
-							<Button type="submit" disabled={form.formState.isSubmitting}>
-								{form.formState.isSubmitting ? (
-									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										Register
-									</>
-								) : (
-									"Register"
-								)}
-							</Button>
-						</div>
-					</form>
-				</Form>
-				<div className="mt-4 text-center text-sm">
-					Already have an account?{" "}
-					<Link href="/auth/login" className="underline">
-						Login
+				</form>
+			</Form>
+			<div className="mt-8 text-center">
+				<p className="text-sm text-gray-600">
+					Sudah punya akun?
+					<Link
+						href="/auth/login"
+						className="font-semibold text-primary hover:text-primary-hover transition-colors ml-1"
+					>
+						Masuk
 					</Link>
-				</div>
-			</CardContent>
-		</Card>
+				</p>
+			</div>
+		</div>
 	);
 }
