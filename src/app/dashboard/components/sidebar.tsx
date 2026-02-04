@@ -1,6 +1,7 @@
 "use client";
 
 import { logoutAction } from "@/actions/auth-actions";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { SessionData } from "@/lib/sessions";
@@ -103,13 +104,14 @@ export function Sidebar({ className, session }: SidebarProps) {
 				{/* Logo and Header */}
 				<div className="border-b border-white/10 h-16 px-6 flex items-center bg-black/10">
 					<div className="flex items-center gap-2">
-						{/* Fallback specific logo or icon if image fails or for design match */}
-						<span className="material-icons-round text-primary text-3xl">
-							school
-						</span>
-						<span className="text-white text-xl font-bold tracking-tight">
-							KelasInovatif
-						</span>
+						<Image
+							src="/images/logo_kelas_inovatif.webp"
+							alt="Kelas Inovatif Logo"
+							width={190}
+							height={40}
+							className="h-10 w-auto object-contain"
+							priority
+						/>
 					</div>
 				</div>
 

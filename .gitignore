@@ -45,5 +45,7 @@ next-env.d.ts
 
 .deploy
 
+# logs
+logs/
 # sql
 *.sql

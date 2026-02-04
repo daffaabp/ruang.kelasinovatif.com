@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
 
 import { AlertError } from "@/components/shared/alert-error";
@@ -73,12 +74,14 @@ export function LoginForm() {
 	return (
 		<div className="bg-white rounded-2xl p-8 md:p-10 transform transition-all hover:scale-[1.005] duration-500">
 			<div className="flex items-center justify-center gap-2 mb-8">
-				<span className="material-icons-round text-primary text-4xl">
-					school
-				</span>
-				<span className="text-gray-900 text-2xl font-extrabold tracking-tight">
-					KelasInovatif
-				</span>
+				<Image
+					src="/images/logo_kelas_inovatif.webp"
+					alt="KelasInovatif Logo"
+					width={240}
+					height={60}
+					className="h-12 w-auto object-contain"
+					priority
+				/>
 			</div>
 			<div className="text-center mb-8">
 				<h1 className="text-2xl font-bold text-gray-900 mb-2">Masuk</h1>

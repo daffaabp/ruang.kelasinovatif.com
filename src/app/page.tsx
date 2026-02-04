@@ -1,6 +1,7 @@
 
 
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
 	return (
@@ -9,12 +10,14 @@ export default function Home() {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex items-center justify-between h-20">
 						<div className="flex items-center gap-2">
-							<span className="material-icons-round text-primary text-3xl">
-								school
-							</span>
-							<span className="text-white text-xl font-bold tracking-tight">
-								KelasInovatif
-							</span>
+							<Image
+								src="/images/logo_kelas_inovatif.webp"
+								alt="Kelas Inovatif Logo"
+								width={190}
+								height={45}
+								className="h-10 w-auto object-contain"
+								priority
+							/>
 						</div>
 						<div className="hidden md:block">
 							<div className="ml-10 flex items-baseline space-x-8">
