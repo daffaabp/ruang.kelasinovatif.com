@@ -44,7 +44,7 @@ export default function RootLayout({
 				/>
 			</head>
 			<body className={plusJakartaSans.className}>
-				<NextTopLoader />
+				<NextTopLoader color="#0f3930" showSpinner={false} />
 				{children}
 				<Toaster />
 			</body>
