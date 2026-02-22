@@ -13,6 +13,7 @@ import {
 	Home,
 	Menu,
 	Users,
+	Sparkles,
 	X,
 } from "lucide-react";
 import Link from "next/link";
@@ -64,6 +65,11 @@ const userOnlyMenuItems: MenuItem[] = [
 		title: "Materi Premium",
 		href: "/dashboard/premium",
 		icon: GraduationCap,
+	},
+	{
+		title: "Prompt Akademik",
+		href: "https://prompt.kelasinovatif.com/",
+		icon: Sparkles,
 	},
 ];
 
