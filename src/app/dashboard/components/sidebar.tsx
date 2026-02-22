@@ -105,7 +105,7 @@ export function Sidebar({ className, session }: SidebarProps) {
 				<div className="border-b border-white/10 h-16 px-6 flex items-center bg-black/10">
 					<div className="flex items-center gap-2">
 						<Image
-							src="/images/logo_kelas_inovatif.webp"
+							src="/images/logo_kelas_inovatif_light.webp"
 							alt="Kelas Inovatif Logo"
 							width={190}
 							height={40}

@@ -11,7 +11,7 @@ export default function Home() {
 					<div className="flex items-center justify-between h-20">
 						<div className="flex items-center gap-2">
 							<Image
-								src="/images/logo_kelas_inovatif.webp"
+								src="/images/logo_kelas_inovatif_light.webp"
 								alt="Kelas Inovatif Logo"
 								width={190}
 								height={45}
