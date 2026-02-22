@@ -192,7 +192,7 @@ export function Sidebar({ className, session }: SidebarProps) {
 									? `${session.profile.firstName} ${session.profile.lastName || ""}`
 									: "User"}
 							</p>
-							<p className="text-xs text-slate-400 truncate">Siswa Premium</p>
+							<p className="text-xs text-slate-400 truncate">Member Premium</p>
 						</div>
 					</div>
 					<button
