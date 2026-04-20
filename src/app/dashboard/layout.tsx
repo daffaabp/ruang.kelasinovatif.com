@@ -1,12 +1,25 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { SidebarWrapper } from "./components/sidebar-wrapper"
 import { HeaderWrapper } from "./components/header-wrapper"
+import { ProfileCompletionDialog } from "./components/profile-completion-dialog"
+import { getSession } from "@/lib/sessions"
+import { prisma } from "@/lib/prisma"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
 	children,
 }: {
 	children: React.ReactNode
 }) {
+	const session = await getSession()
+	const profile = session.userId
+		? await prisma.userProfile.findFirst({
+				where: { userId: session.userId },
+				select: { id: true },
+			})
+		: null
+
+	const hasProfile = !!profile
+
 	return (
 		<SidebarProvider>
 			<SidebarWrapper />
@@ -18,6 +31,7 @@ export default function DashboardLayout({
 					</div>
 				</main>
 			</SidebarInset>
+			{!hasProfile && <ProfileCompletionDialog />}
 		</SidebarProvider>
 	)
 }

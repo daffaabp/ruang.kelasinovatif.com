@@ -37,7 +37,7 @@ export function RegisterForm() {
 					if (data?.success) {
 						setIsSuccess(true);
 						await new Promise((resolve) => setTimeout(resolve, 3000));
-						router.push("/dashboard/profile");
+						router.push("/dashboard");
 					}
 				},
 				onError: ({ error }) => {
@@ -72,23 +72,44 @@ export function RegisterForm() {
 	}
 
 	return (
-		<div className="bg-white rounded-2xl p-8 md:p-10 transform transition-all hover:scale-[1.005] duration-500">
-			<div className="flex items-center justify-center gap-2 mb-8">
-				<Image
-					src="/images/logo_kelas_inovatif.webp"
-					alt="KelasInovatif Logo"
-					width={240}
-					height={60}
-					className="h-12 w-auto object-contain"
-					priority
-				/>
-			</div>
-			<div className="text-center mb-8">
-				<h1 className="text-2xl font-bold text-gray-900 mb-2">Daftar</h1>
-				<p className="text-gray-500 text-sm">
-					Buat akun untuk memulai pembelajaran
-				</p>
-			</div>
+		<div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all hover:scale-[1.005] duration-500">
+			{/* Gradient top strip */}
+			<div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />
+
+			{/* Corner decoration */}
+			<div className="absolute top-1.5 right-0 w-36 h-36 bg-gradient-to-bl from-emerald-50 to-transparent rounded-bl-full pointer-events-none" />
+			<div className="absolute bottom-0 left-0 w-28 h-28 bg-gradient-to-tr from-emerald-50/60 to-transparent rounded-tr-full pointer-events-none" />
+
+			{/* Dot pattern corner */}
+			<div
+				className="absolute bottom-0 right-0 w-32 h-32 opacity-[0.06] pointer-events-none"
+				style={{
+					backgroundImage: "radial-gradient(circle, #064E3B 1.5px, transparent 1.5px)",
+					backgroundSize: "10px 10px",
+				}}
+			/>
+
+			<div className="p-8 md:p-10">
+				<div className="flex flex-col items-center gap-2 mb-7">
+					<Image
+						src="/images/logo_kelas_inovatif.webp"
+						alt="KelasInovatif Logo"
+						width={240}
+						height={60}
+						className="h-11 w-auto object-contain"
+						priority
+					/>
+					<span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[11px] font-semibold text-emerald-700">
+						<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+						Bergabung ke Komunitas
+					</span>
+				</div>
+				<div className="text-center mb-7">
+					<h1 className="text-2xl font-bold text-gray-900 mb-1.5">Daftar</h1>
+					<p className="text-gray-400 text-sm">
+						Buat akun untuk memulai pembelajaran
+					</p>
+				</div>
 			<Form {...form}>
 				<form onSubmit={handleSubmitWithAction} className="space-y-5">
 					<FormField
@@ -166,6 +187,7 @@ export function RegisterForm() {
 						Masuk
 					</Link>
 				</p>
+			</div>
 			</div>
 		</div>
 	);

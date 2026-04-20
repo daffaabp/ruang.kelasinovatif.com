@@ -1,154 +1,195 @@
-
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
+
+const features = [
+	{
+		icon: "touch_app",
+		title: "Pembelajaran Interaktif",
+		subtitle: "Konten akademik berbasis AI",
+		description:
+			"Akses materi interaktif, kuis cerdas, dan modul pembelajaran yang dirancang AI untuk pengalaman belajar yang lebih efektif.",
+	},
+	{
+		icon: "trending_up",
+		title: "Pantau Progres",
+		subtitle: "Lacak perjalanan belajarmu",
+		description:
+			"Lihat pencapaianmu secara real-time, ukur perkembangan, dan tetap termotivasi dengan analitik pembelajaran personal.",
+	},
+	{
+		icon: "groups",
+		title: "Komunitas Belajar",
+		subtitle: "Terhubung dan bertumbuh bersama",
+		description:
+			"Bergabung dengan ribuan pelajar aktif, berdiskusi, berbagi ilmu, dan saling mendukung dalam forum KelasInovatif.",
+	},
+];
 
 export default function Home() {
+	const [mobileOpen, setMobileOpen] = useState(false);
+
 	return (
-		<div className="bg-deep-green dark:bg-background-dark font-sans text-white dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-300">
-			<nav className="w-full fixed top-0 z-50 transition-all duration-300 bg-deep-green/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-white/10">
+		<div className="h-screen flex flex-col bg-[#0a2e26] font-sans text-white antialiased overflow-hidden">
+			{/* ── NAVBAR ── */}
+			<nav className="shrink-0 w-full z-50 bg-[#0a2e26]/90 backdrop-blur-md border-b border-white/10">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="flex items-center justify-between h-20">
-						<div className="flex items-center gap-2">
+					<div className="flex items-center justify-between h-14">
+						<Link href="/">
 							<Image
 								src="/images/logo_kelas_inovatif_light.webp"
-								alt="Kelas Inovatif Logo"
-								width={190}
-								height={45}
-								className="h-10 w-auto object-contain"
+								alt="KelasInovatif"
+								width={150}
+								height={36}
+								className="h-8 w-auto object-contain"
 								priority
 							/>
-						</div>
-						<div className="hidden md:block">
-							<div className="ml-10 flex items-baseline space-x-8">
-								<Link
-									href="/"
-									className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-								>
-									Beranda
-								</Link>
-								<Link
-									href="#"
-									className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-								>
-									Tentang Kami
-								</Link>
-								<Link
-									href="/auth/login"
-									className="text-white bg-white/10 hover:bg-white/20 px-3 py-2 rounded-md text-sm font-medium transition-colors border border-white/10"
-								>
-									Masuk
-								</Link>
-							</div>
-						</div>
-						<div className="-mr-2 flex md:hidden">
-							<button
-								type="button"
-								className="bg-transparent inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white focus:outline-none"
+						</Link>
+
+						{/* Desktop */}
+						<div className="hidden md:flex items-center gap-3">
+							<Link
+								href="/auth/login"
+								className="px-4 py-2 text-sm font-medium text-emerald-100/75 hover:text-white transition-colors"
 							>
-								<span className="sr-only">Open main menu</span>
-								<span className="material-icons-round">menu</span>
-							</button>
+								Masuk
+							</Link>
+							<Link
+								href="/auth/register"
+								className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-lg shadow-lg shadow-emerald-900/40 transition-all hover:scale-105"
+							>
+								Bergabung Sekarang
+							</Link>
 						</div>
+
+						{/* Mobile */}
+						<button
+							type="button"
+							aria-label="Menu"
+							onClick={() => setMobileOpen((v) => !v)}
+							className="md:hidden p-2 rounded-lg text-emerald-200 hover:bg-white/10 transition-colors"
+						>
+							<span className="material-icons-round">
+								{mobileOpen ? "close" : "menu"}
+							</span>
+						</button>
 					</div>
 				</div>
-			</nav>
-			<section className="relative pt-24 pb-12 lg:pt-28 lg:pb-16 overflow-hidden min-h-screen flex flex-col justify-center">
-				<div className="absolute top-0 left-0 w-full h-full bg-deep-green dark:bg-background-dark z-0" />
-				<div className="absolute top-[-10%] right-[-5%] w-80 h-80 bg-primary/20 rounded-full blur-3xl z-0 animate-pulse" />
-				<div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-emerald-900/40 rounded-full blur-3xl z-0" />
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-					<h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-4 leading-tight">
-						Selamat Datang di <br />
-						<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-primary">
-							KelasInovatif
-						</span>
-					</h1>
-					<p className="mt-3 max-w-2xl mx-auto text-base md:text-lg text-emerald-100/80 font-light">
-						Memberdayakan Pendidikan Melalui Inovasi. Platform belajar modern
-						untuk masa depan yang lebih cerah.
-					</p>
-					<div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-5 text-left">
-						<div className="glass-card p-6 rounded-xl shadow-lg hover:translate-y-[-5px] transition-all duration-300 group">
-							<div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-								<span className="material-icons-round text-deep-green dark:text-emerald-400 text-2xl">
-									touch_app
-								</span>
-							</div>
-							<h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-primary transition-colors">
-								Pembelajaran Interaktif
-							</h3>
-							<p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-2">
-								Konten pendidikan yang menarik
-							</p>
-							<p className="text-gray-600 dark:text-gray-300 leading-relaxed text-xs">
-								Akses pelajaran interaktif, kuis, dan materi pembelajaran yang
-								dirancang untuk meningkatkan pengalaman belajar Anda.
-							</p>
-						</div>
-						<div className="glass-card p-6 rounded-xl shadow-lg hover:translate-y-[-5px] transition-all duration-300 group relative overflow-hidden">
-							<div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-all group-hover:bg-primary/10" />
-							<div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-								<span className="material-icons-round text-deep-green dark:text-emerald-400 text-2xl">
-									trending_up
-								</span>
-							</div>
-							<h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-primary transition-colors">
-								Pantau Progres
-							</h3>
-							<p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-2">
-								Pantau perjalanan belajar Anda
-							</p>
-							<p className="text-gray-600 dark:text-gray-300 leading-relaxed text-xs">
-								Lacak kemajuan Anda, lihat pencapaian, dan tetap termotivasi
-								dengan analitik pembelajaran kami.
-							</p>
-						</div>
-						<div className="glass-card p-6 rounded-xl shadow-lg hover:translate-y-[-5px] transition-all duration-300 group">
-							<div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-								<span className="material-icons-round text-deep-green dark:text-emerald-400 text-2xl">
-									groups
-								</span>
-							</div>
-							<h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-primary transition-colors">
-								Komunitas Belajar
-							</h3>
-							<p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 mb-2">
-								Terhubung dan berkolaborasi
-							</p>
-							<p className="text-gray-600 dark:text-gray-300 leading-relaxed text-xs">
-								Bergabung dengan komunitas pembelajar kami yang aktif, berbagi
-								pengetahuan, dan berdiskusi.
-							</p>
-						</div>
-					</div>
-					<div className="mt-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 items-center">
+
+				{mobileOpen && (
+					<div className="md:hidden border-t border-white/10 bg-[#0a2e26] px-4 pb-4 pt-3 flex flex-col gap-2">
+						<Link
+							href="/auth/login"
+							onClick={() => setMobileOpen(false)}
+							className="w-full text-center py-2.5 text-sm font-medium text-emerald-100/75 hover:text-white"
+						>
+							Masuk
+						</Link>
 						<Link
 							href="/auth/register"
-							className="w-full sm:w-auto px-6 py-3 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2 group text-sm"
+							onClick={() => setMobileOpen(false)}
+							className="w-full text-center py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-lg"
 						>
-							Mulai Belajar
-							<span className="material-icons-round group-hover:translate-x-1 transition-transform text-base">
+							Bergabung Sekarang
+						</Link>
+					</div>
+				)}
+			</nav>
+
+			{/* ── HERO + CARDS dalam satu frame ── */}
+			<main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden px-4 sm:px-6 lg:px-8">
+				{/* Background decorations */}
+				<div className="absolute inset-0 geometric-pattern opacity-25 z-0" />
+				<div className="absolute top-[-5%] right-[-10%] w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-[100px] z-0" />
+				<div className="absolute bottom-[-10%] left-[-8%] w-[400px] h-[400px] bg-emerald-900/35 rounded-full blur-[90px] z-0" />
+
+				<div className="relative z-10 w-full max-w-5xl flex flex-col items-center gap-5">
+
+					{/* Label */}
+					<p className="text-xs font-bold tracking-[0.2em] text-emerald-400/80 uppercase">
+						Platform AI untuk Akademik Indonesia
+					</p>
+
+					{/* Headline */}
+					<h1 className="text-3xl md:text-5xl lg:text-[3.25rem] font-extrabold text-white tracking-tight leading-[1.2] text-center">
+						Selamat Datang di
+						<br />
+						<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-300">
+							Komunitas Kelas Inovatif
+						</span>
+					</h1>
+
+					{/* Subtitle */}
+					<p className="text-sm md:text-base text-emerald-100/60 leading-relaxed text-center max-w-xl">
+						Belajar bersama ribuan pelajar Indonesia. Akses materi berkualitas,
+						didukung AI, dan tumbuh dalam komunitas yang saling menginspirasi.
+					</p>
+
+					{/* CTAs */}
+					<div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+						<Link
+							href="/auth/register"
+							className="w-full sm:w-auto px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl shadow-xl shadow-emerald-900/40 transition-all hover:scale-105 flex items-center justify-center gap-2 group text-sm"
+						>
+							Bergabung ke Komunitas
+							<span className="material-icons-round text-base group-hover:translate-x-1 transition-transform">
 								arrow_forward
 							</span>
 						</Link>
 						<Link
-							href="/auth/register"
-							className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-gray-50 text-deep-green font-bold rounded-xl shadow-lg transition-all transform hover:scale-105 border border-transparent text-sm"
+							href="/auth/login"
+							className="w-full sm:w-auto px-6 py-3 bg-white/10 hover:bg-white/15 text-white font-semibold rounded-xl border border-white/20 transition-all hover:scale-105 text-sm text-center"
 						>
-							Daftar Sekarang
-						</Link>
-						<Link
-							href="/dashboard"
-							className="w-full sm:w-auto px-6 py-3 bg-emerald-900/40 hover:bg-emerald-800/60 dark:bg-white/10 dark:hover:bg-white/20 text-emerald-100 dark:text-white font-semibold rounded-xl backdrop-blur-md transition-all border border-emerald-500/30 flex items-center justify-center gap-2 text-sm"
-						>
-							<span className="material-icons-round text-base">school</span>
-							Kursus Saya
+							Sudah anggota? Masuk
 						</Link>
 					</div>
+
+					{/* ── Feature cards ── */}
+					<div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 mt-1">
+						{features.map((feature, i) => (
+							<div
+								key={feature.title}
+								className="group relative rounded-2xl p-5 shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-white/10 bg-white/95"
+							>
+								{/* Accent strip top */}
+								<div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 rounded-t-2xl" />
+
+								{/* Corner decoration */}
+								<div className="absolute top-1 right-0 w-24 h-24 bg-emerald-500/8 rounded-bl-full rounded-tr-2xl" />
+
+								{/* Subtle dot pattern */}
+								{i === 1 && (
+									<div
+										className="absolute bottom-0 left-0 w-full h-16 opacity-[0.04]"
+										style={{
+											backgroundImage:
+												"radial-gradient(circle, #064E3B 1px, transparent 1px)",
+											backgroundSize: "12px 12px",
+										}}
+									/>
+								)}
+
+								<div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-50 border border-emerald-200/60 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+									<span className="material-icons-round text-emerald-700 text-xl">
+										{feature.icon}
+									</span>
+								</div>
+								<h3 className="text-sm font-bold text-gray-900 mb-1 group-hover:text-emerald-700 transition-colors">
+									{feature.title}
+								</h3>
+								<p className="text-[11px] font-semibold text-emerald-600 mb-2">
+									{feature.subtitle}
+								</p>
+								<p className="text-[11px] text-gray-500 leading-relaxed">
+									{feature.description}
+								</p>
+							</div>
+						))}
+					</div>
 				</div>
-			</section>
-			<div className="mt-auto w-full h-24 bg-gradient-to-t from-emerald-900/20 to-transparent dark:from-black/40 pointer-events-none" />
+			</main>
 		</div>
 	);
 }

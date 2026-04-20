@@ -20,13 +20,13 @@ import { profileAction } from "./profile-actions";
 import { profileSchema } from "./profile-validations";
 
 interface ProfileData {
-	firstName: string;
-	lastName: string;
-	phone: string;
-	institution: string;
-	address: string;
-	city: string;
-	province: string;
+	firstName: string | null;
+	lastName: string | null;
+	phone: string | null;
+	institution: string | null;
+	address: string | null;
+	city: string | null;
+	province: string | null;
 }
 
 interface ProfileFormProps {
@@ -51,14 +51,14 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 				},
 			},
 			formProps: {
-				defaultValues: initialData ?? {
-					firstName: "",
-					lastName: "",
-					phone: "",
-					institution: "",
-					address: "",
-					city: "",
-					province: "",
+				defaultValues: {
+					firstName: initialData?.firstName ?? "",
+					lastName: initialData?.lastName ?? "",
+					phone: initialData?.phone ?? "",
+					institution: initialData?.institution ?? "",
+					address: initialData?.address ?? "",
+					city: initialData?.city ?? "",
+					province: initialData?.province ?? "",
 				},
 			},
 			errorMapProps: {
