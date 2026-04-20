@@ -76,18 +76,18 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 	}, [form]);
 
 	return (
-		<div className="bg-white rounded-2xl shadow-card border border-slate-100 overflow-hidden mb-8">
-			<div className="p-8">
+		<div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden mb-4">
+			<div className="p-4 lg:p-5">
 				<Form {...form}>
-					<form onSubmit={handleSubmitWithAction} className="space-y-8">
+					<form onSubmit={handleSubmitWithAction} className="space-y-5">
 						<div>
-							<div className="flex items-center gap-2 mb-6">
+							<div className="flex items-center gap-2 mb-3">
 								<span className="material-icons-round text-primary">badge</span>
-								<h4 className="text-lg font-bold text-slate-800">
+								<h4 className="text-base font-bold text-slate-800">
 									Informasi Pribadi
 								</h4>
 							</div>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 								<div className="space-y-2">
 									<FormField
 										control={form.control}
@@ -101,7 +101,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 													<div className="relative">
 														<Input
 															placeholder="Nama Depan"
-															className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															className="h-10 w-full px-3 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
 															{...field}
 															value={field.value || ""}
 														/>
@@ -124,7 +124,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 												<FormControl>
 													<Input
 														placeholder="Nama Belakang"
-														className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+														className="h-10 w-full px-3 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
 														{...field}
 														value={field.value || ""}
 													/>
@@ -145,12 +145,12 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 												</FormLabel>
 												<FormControl>
 													<div className="relative">
-														<span className="absolute left-4 top-2.5 text-slate-400 material-icons-round text-[20px]">
+														<span className="absolute left-3 top-2 text-slate-400 material-icons-round text-[20px]">
 															call
 														</span>
 														<Input
 															placeholder="08..."
-															className="w-full pl-11 pr-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															className="h-10 w-full pl-10 pr-3 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
 															{...field}
 															value={field.value || ""}
 														/>
@@ -172,12 +172,12 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 												</FormLabel>
 												<FormControl>
 													<div className="relative">
-														<span className="absolute left-4 top-2.5 text-slate-400 material-icons-round text-[20px]">
+														<span className="absolute left-3 top-2 text-slate-400 material-icons-round text-[20px]">
 															school
 														</span>
 														<Input
 															placeholder="Nama Sekolah / Institusi"
-															className="w-full pl-11 pr-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															className="h-10 w-full pl-10 pr-3 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
 															{...field}
 															value={field.value || ""}
 														/>
@@ -191,16 +191,16 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 							</div>
 						</div>
 						<div>
-							<div className="h-px w-full bg-slate-100 mb-6"></div>
-							<div className="flex items-center gap-2 mb-6">
+							<div className="h-px w-full bg-slate-100 mb-3"></div>
+							<div className="flex items-center gap-2 mb-3">
 								<span className="material-icons-round text-primary">
 									location_on
 								</span>
-								<h4 className="text-lg font-bold text-slate-800">
+								<h4 className="text-base font-bold text-slate-800">
 									Alamat Lengkap
 								</h4>
 							</div>
-							<div className="space-y-6">
+							<div className="space-y-4">
 								<div className="space-y-2">
 									<FormField
 										control={form.control}
@@ -213,7 +213,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 												<FormControl>
 													<Input
 														placeholder="Alamat lengkap..."
-														className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+														className="h-10 w-full px-3 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
 														{...field}
 														value={field.value || ""}
 													/>
@@ -223,7 +223,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 										)}
 									/>
 								</div>
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div className="space-y-2">
 										<FormField
 											control={form.control}
@@ -236,7 +236,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 													<FormControl>
 														<Input
 															placeholder="Nama Kota"
-															className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															className="h-10 w-full px-3 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
 															{...field}
 															value={field.value || ""}
 														/>
@@ -258,7 +258,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 													<FormControl>
 														<Input
 															placeholder="Nama Provinsi"
-															className="w-full px-4 py-2.5 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
+															className="h-10 w-full px-3 rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 transition-all duration-200 placeholder-slate-400 focus:border-primary focus:ring-primary"
 															{...field}
 															value={field.value || ""}
 														/>
@@ -278,19 +278,19 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 							onClose={() => form.clearErrors("root")}
 						/>
 
-						<div className="pt-6 border-t border-slate-100 flex justify-between gap-3">
+						<div className="sticky bottom-0 z-10 -mx-4 mt-2 border-t border-slate-100 bg-white/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-white/80 lg:-mx-5 lg:px-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 							<Button
 								type="button"
 								variant="outline"
-								className="px-4 py-2.5 text-slate-600 font-semibold rounded-xl border-slate-200 hover:bg-slate-50 transition-all"
+								className="h-10 px-4 text-slate-600 font-semibold rounded-lg border-slate-200 hover:bg-slate-50 transition-all"
 							>
 								Ubah Password
 							</Button>
-							<div className="flex gap-3">
+							<div className="flex gap-2">
 								<Button
 									type="button"
 									variant="ghost"
-									className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl transition-all"
+									className="h-10 px-5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-lg transition-all"
 									onClick={() => form.reset()}
 								>
 									Batal
@@ -298,7 +298,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
 								<Button
 									type="submit"
 									disabled={form.formState.isSubmitting}
-									className="px-8 py-2.5 bg-primary hover:bg-primary-hover text-white font-bold rounded-xl shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5 flex items-center gap-2"
+									className="h-10 px-6 bg-primary hover:bg-primary-hover text-white font-bold rounded-lg shadow-md shadow-primary/20 transition-all flex items-center gap-2"
 								>
 									{form.formState.isSubmitting ? (
 										<>

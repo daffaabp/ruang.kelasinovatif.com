@@ -33,6 +33,17 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* ── Sidebar shadcn – tema hijau gelap brand Kelas Inovatif ── */
+    /* Warna dasar sidebar: #0f3930 (deep slate green) */
+    --sidebar-background: 165 68% 14%;         /* #0f3930 */
+    --sidebar-foreground: 0 0% 95%;            /* hampir putih */
+    --sidebar-primary: 158 64% 40%;            /* #10B981 emerald */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 165 55% 20%;             /* sedikit lebih terang dari bg */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 165 40% 22%;             /* border halus */
+    --sidebar-ring: 158 64% 40%;               /* emerald ring */
   }
 
   .dark {
@@ -60,6 +71,16 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Sidebar dark: sama karena sidebar memang gelap */
+    --sidebar-background: 165 68% 14%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 158 64% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 165 55% 20%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 165 40% 22%;
+    --sidebar-ring: 158 64% 40%;
   }
 
   .geometric-pattern {

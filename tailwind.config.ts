@@ -44,19 +44,27 @@ export default {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
-				chart: {
-					'1': 'hsl(var(--chart-1))',
-					'2': 'hsl(var(--chart-2))',
-					'3': 'hsl(var(--chart-3))',
-					'4': 'hsl(var(--chart-4))',
-					'5': 'hsl(var(--chart-5))'
-				},
-				// Custom colors from reference
-				"deep-green": "#064E3B", // Emerald 900
-				"background-dark": "#022C22", // Emerald 950
-				"card-dark": "#134E4A", // Teal 900
-				"background-light": "#F0FDF4", // Emerald 50
-				"sidebar": "#0f3930", // Deep slate green for sidebar
+			chart: {
+				'1': 'hsl(var(--chart-1))',
+				'2': 'hsl(var(--chart-2))',
+				'3': 'hsl(var(--chart-3))',
+				'4': 'hsl(var(--chart-4))',
+				'5': 'hsl(var(--chart-5))',
+			},
+			"deep-green": "#064E3B",
+			"background-dark": "#022C22",
+			"card-dark": "#134E4A",
+			"background-light": "#F0FDF4",
+			sidebar: {
+				DEFAULT: "hsl(var(--sidebar-background))",
+				foreground: "hsl(var(--sidebar-foreground))",
+				primary: "hsl(var(--sidebar-primary))",
+				"primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+				accent: "hsl(var(--sidebar-accent))",
+				"accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+				border: "hsl(var(--sidebar-border))",
+				ring: "hsl(var(--sidebar-ring))",
+			},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
