@@ -1,4 +1,4 @@
-import type { CourseType } from "@prisma/client";
+import type { AccessType, CourseType } from "@prisma/client";
 
 export type PaginatedResult = {
 	data: Array<{
@@ -13,6 +13,7 @@ export type PaginatedResult = {
 		updatedAt: Date;
 		course: {
 			courseName: string;
+			accessType: AccessType;
 		};
 	}>;
 	total: number;

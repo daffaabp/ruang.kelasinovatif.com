@@ -1,3 +1,5 @@
+import type { AccessType } from "@prisma/client";
+
 export type UserWithProfile = {
 	id: string;
 	email: string;
@@ -13,12 +15,17 @@ export type UserWithProfile = {
 		city: string;
 		province: string;
 	} | null;
-	UserCourses?: Array<{
+	UserCourseDetails?: Array<{
 		id: string;
-		courseId: string;
-		course: {
+		courseDetailId: string;
+		courseDetail: {
 			id: string;
-			courseName: string;
+			title: string;
+			course: {
+				id: string;
+				courseName: string;
+				accessType: AccessType;
+			};
 		};
 	}>;
 };

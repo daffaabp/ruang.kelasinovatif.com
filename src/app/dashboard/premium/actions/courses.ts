@@ -11,9 +11,7 @@ export const getCoursesAction = actionClient.action(
 		try {
 			const courses = await prisma.courses.findMany({
 				where: {
-					NOT: {
-						price: null,
-					},
+					accessType: "PREMIUM",
 				},
 				select: {
 					id: true,
@@ -34,6 +32,46 @@ export const getCoursesAction = actionClient.action(
 	},
 );
 
+// Returns premium course categories (kategori) with their course details (rekaman),
+// digunakan di admin UI saat admin memilih detail apa saja yang bisa diakses user.
+export const getPremiumCourseDetailsGroupedAction = actionClient.action(
+	async () => {
+		try {
+			const categories = await prisma.courses.findMany({
+				where: {
+					accessType: "PREMIUM",
+				},
+				select: {
+					id: true,
+					courseName: true,
+					CourseDetails: {
+						select: {
+							id: true,
+							title: true,
+							courseType: true,
+						},
+						orderBy: {
+							createdAt: "desc",
+						},
+					},
+				},
+				orderBy: {
+					courseName: "asc",
+				},
+			});
+
+			return categories.map((category) => ({
+				id: category.id,
+				courseName: category.courseName,
+				details: category.CourseDetails,
+			}));
+		} catch (error) {
+			console.error("Get premium course details grouped error:", error);
+			throw error;
+		}
+	},
+);
+
 export const getUserCoursesAction = actionClient
 	.schema(
 		z.object({
@@ -44,33 +82,43 @@ export const getUserCoursesAction = actionClient
 		try {
 			const { userId } = parsedInput;
 
-			const userCourses = await prisma.userCourses.findMany({
+			// Ambil semua courseDetail yang user miliki aksesnya, lalu distinct berdasarkan course parent.
+			const userAccesses = await prisma.userCourseDetails.findMany({
 				where: {
-					userId: userId,
-					course: {
-						NOT: {
-							price: null,
+					userId,
+					courseDetail: {
+						course: {
+							accessType: "PREMIUM",
 						},
 					},
 				},
 				select: {
-					course: {
+					courseDetail: {
 						select: {
-							id: true,
-							courseName: true,
-							price: true,
-							linkPayment: true,
+							course: {
+								select: {
+									id: true,
+									courseName: true,
+									price: true,
+									linkPayment: true,
+								},
+							},
 						},
-					},
-				},
-				orderBy: {
-					course: {
-						courseName: "asc",
 					},
 				},
 			});
 
-			return userCourses.map((uc) => uc.course);
+			const uniqueCoursesMap = new Map<string, CourseOption>();
+			for (const ua of userAccesses) {
+				const c = ua.courseDetail.course;
+				if (!uniqueCoursesMap.has(c.id)) {
+					uniqueCoursesMap.set(c.id, c);
+				}
+			}
+
+			return Array.from(uniqueCoursesMap.values()).sort((a, b) =>
+				a.courseName.localeCompare(b.courseName),
+			);
 		} catch (error) {
 			console.error("Get user courses error:", error);
 			throw error;
@@ -90,22 +138,22 @@ export const getPremiumCoursesAction = actionClient
 		try {
 			const { search, courseId, courseType, userId } = parsedInput;
 
-			// Get user's courses
-			const userCourses = await prisma.userCourses.findMany({
+			// Akses user sekarang granular per detail course.
+			const userAccesses = await prisma.userCourseDetails.findMany({
 				where: {
-					userId: userId,
-					course: {
-						NOT: {
-							price: null,
+					userId,
+					courseDetail: {
+						course: {
+							accessType: "PREMIUM",
 						},
 					},
 				},
 				select: {
-					courseId: true,
+					courseDetailId: true,
 				},
 			});
 
-			const userCourseIds = userCourses.map((uc) => uc.courseId);
+			const userCourseDetailIds = userAccesses.map((ua) => ua.courseDetailId);
 
 			const where = {
 				AND: [
@@ -114,13 +162,13 @@ export const getPremiumCoursesAction = actionClient
 							OR: [
 								{
 									title: {
-										contains: search
+										contains: search,
 									},
 								},
 								{
 									course: {
 										courseName: {
-											contains: search
+											contains: search,
 										},
 									},
 								},
@@ -129,24 +177,22 @@ export const getPremiumCoursesAction = actionClient
 						: {},
 					courseId
 						? {
-							courseId: courseId,
+							courseId,
 						}
 						: {},
 					courseType
 						? {
-							courseType: courseType,
+							courseType,
 						}
 						: {},
 					{
-						courseId: {
-							in: userCourseIds,
+						id: {
+							in: userCourseDetailIds,
 						},
 					},
 					{
 						course: {
-							NOT: {
-								price: null,
-							},
+							accessType: "PREMIUM" as const,
 						},
 					},
 				],
@@ -157,8 +203,8 @@ export const getPremiumCoursesAction = actionClient
 					where,
 					orderBy: [
 						{
-							createdAt: "desc"
-						}
+							createdAt: "desc",
+						},
 					],
 					include: {
 						course: {
@@ -177,7 +223,7 @@ export const getPremiumCoursesAction = actionClient
 			const result: PaginatedResult = {
 				data: courses,
 				total,
-				pageCount: 1, // Since we're not using pagination in the premium version
+				pageCount: 1,
 			};
 
 			return { data: result };
@@ -222,24 +268,21 @@ export const getAllAvailableCoursesAction = actionClient
 		try {
 			const { userId } = parsedInput;
 
-			// Get user's subscribed courses
-			const userCourses = await prisma.userCourses.findMany({
+			// Detail courses yang user punya aksesnya (granular per rekaman)
+			const userAccesses = await prisma.userCourseDetails.findMany({
 				where: {
-					userId: userId,
+					userId,
 				},
 				select: {
-					courseId: true,
+					courseDetailId: true,
 				},
 			});
 
-			const subscribedCourseIds = userCourses.map((uc) => uc.courseId);
+			const subscribedDetailIds = userAccesses.map((ua) => ua.courseDetailId);
 
-			// Get all available courses with their details
 			const allCourses = await prisma.courses.findMany({
 				where: {
-					NOT: {
-						price: null,
-					},
+					accessType: "PREMIUM",
 				},
 				select: {
 					id: true,
@@ -257,13 +300,13 @@ export const getAllAvailableCoursesAction = actionClient
 				},
 				orderBy: {
 					CourseDetails: {
-						_count: "desc"
-					}
+						_count: "desc",
+					},
 				},
 			});
 
 			return {
-				subscribedCourses: subscribedCourseIds,
+				subscribedDetailIds,
 				allCourses: allCourses.map((course) => ({
 					...course,
 					courseDetails: course.CourseDetails,

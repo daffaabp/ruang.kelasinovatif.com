@@ -4,6 +4,22 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
 	Table,
 	TableBody,
 	TableCell,
@@ -12,7 +28,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { useDebounce } from "@/hooks/use-debounce";
-import { CourseType } from "@prisma/client";
 import { ArrowUpDown, Loader2, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { getDetailCoursesAction } from "./detailcourse-actions";
@@ -28,6 +43,8 @@ const defaultTableData: PaginatedResult = {
 
 type SortField = "title" | "updatedAt";
 type SortOrder = "asc" | "desc";
+type CourseTypeFilter = "all" | "EBOOK" | "VIDEO";
+type AccessFilter = "all" | "free" | "premium";
 
 interface CourseOption {
 	id: string;
@@ -59,6 +76,9 @@ export function DetailCourseTable({
 	const [tableData, setTableData] = useState<PaginatedResult>(initialData);
 	const [sortField, setSortField] = useState<SortField>("updatedAt");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+	const [courseTypeFilter, setCourseTypeFilter] =
+		useState<CourseTypeFilter>("all");
+	const [accessFilter, setAccessFilter] = useState<AccessFilter>("all");
 
 	const debouncedSearch = useDebounce(search, 500);
 
@@ -81,6 +101,9 @@ export function DetailCourseTable({
 				sortField,
 				sortOrder,
 				courseId: selectedCourseId,
+				courseTypeFilter:
+					courseTypeFilter === "all" ? undefined : courseTypeFilter,
+				accessFilter: accessFilter === "all" ? undefined : accessFilter,
 			});
 
 			if (result && "data" in result && result.data) {
@@ -94,7 +117,15 @@ export function DetailCourseTable({
 		} finally {
 			setLoading(false);
 		}
-	}, [page, debouncedSearch, sortField, sortOrder, selectedCourseId]);
+	}, [
+		page,
+		debouncedSearch,
+		sortField,
+		sortOrder,
+		selectedCourseId,
+		courseTypeFilter,
+		accessFilter,
+	]);
 
 	useEffect(() => {
 		fetchData();
@@ -106,20 +137,89 @@ export function DetailCourseTable({
 		}
 	}, [loading]);
 
+	useEffect(() => {
+		setPage(1);
+	}, [debouncedSearch, selectedCourseId, courseTypeFilter, accessFilter]);
+
+	const totalPages = Math.max(1, tableData.pageCount);
+	const getPageNumbers = () => {
+		const pages: Array<number | "ellipsis"> = [];
+		if (totalPages <= 7) {
+			for (let i = 1; i <= totalPages; i++) pages.push(i);
+			return pages;
+		}
+		pages.push(1);
+		if (page > 3) pages.push("ellipsis");
+		for (
+			let i = Math.max(2, page - 1);
+			i <= Math.min(totalPages - 1, page + 1);
+			i++
+		) {
+			pages.push(i);
+		}
+		if (page < totalPages - 2) pages.push("ellipsis");
+		pages.push(totalPages);
+		return pages;
+	};
+
 	const handleDataChange = useCallback(() => {
 		fetchData();
 	}, [fetchData]);
 
 	return (
 		<div className="space-y-4 px-4 sm:px-0">
-			<div className="flex items-center gap-2">
-				<Search className="h-4 w-4 text-muted-foreground" />
-				<Input
-					placeholder="Cari berdasarkan judul..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					className="max-w-sm"
-				/>
+			<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+				<div className="flex items-center gap-2">
+					<Search className="h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder="Cari judul/deskripsi/course..."
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						className="max-w-sm"
+					/>
+				</div>
+				<div className="flex items-center gap-2 flex-wrap">
+					<Select
+						value={courseTypeFilter}
+						onValueChange={(value) =>
+							setCourseTypeFilter(value as CourseTypeFilter)
+						}
+					>
+						<SelectTrigger className="w-[140px]">
+							<SelectValue placeholder="Tipe konten" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Semua tipe</SelectItem>
+							<SelectItem value="EBOOK">E-Book</SelectItem>
+							<SelectItem value="VIDEO">Video</SelectItem>
+						</SelectContent>
+					</Select>
+					<Select
+						value={accessFilter}
+						onValueChange={(value) => setAccessFilter(value as AccessFilter)}
+					>
+						<SelectTrigger className="w-[140px]">
+							<SelectValue placeholder="Filter akses" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">Semua akses</SelectItem>
+							<SelectItem value="free">🆓 Free</SelectItem>
+							<SelectItem value="premium">🔒 Premium</SelectItem>
+						</SelectContent>
+					</Select>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => {
+							setSearch("");
+							setCourseTypeFilter("all");
+							setAccessFilter("all");
+							setPage(1);
+						}}
+					>
+						Reset
+					</Button>
+				</div>
 			</div>
 			<div className="rounded-md border bg-white">
 				<div className="overflow-x-auto">
@@ -142,8 +242,9 @@ export function DetailCourseTable({
 								<TableHead className="hidden md:table-cell min-w-[200px] lg:min-w-[300px] max-w-[400px] xl:max-w-[500px]">
 									Description
 								</TableHead>
-								<TableHead className="w-[120px]">Course</TableHead>
-								<TableHead className="w-[100px]">Type</TableHead>
+								<TableHead className="w-[120px]">Jenis Course</TableHead>
+								<TableHead className="w-[90px]">Akses</TableHead>
+								<TableHead className="w-[100px]">Tipe</TableHead>
 								<TableHead className="w-[120px] lg:w-[150px]">
 									<Button
 										variant="ghost"
@@ -162,7 +263,7 @@ export function DetailCourseTable({
 						<TableBody>
 							{loading ? (
 								<TableRow>
-									<TableCell colSpan={7} className="h-24 text-center">
+									<TableCell colSpan={8} className="h-24 text-center">
 										<div className="flex items-center justify-center">
 											<Loader2 className="h-6 w-6 animate-spin" />
 										</div>
@@ -191,14 +292,31 @@ export function DetailCourseTable({
 											</div>
 										</TableCell>
 										<TableCell>
+											{detail.course.accessType === "FREE" ? (
+												<Badge
+													variant="outline"
+													className="border-green-400 text-green-700 bg-green-50 text-xs"
+												>
+													Free
+												</Badge>
+											) : (
+												<Badge
+													variant="outline"
+													className="border-amber-400 text-amber-700 bg-amber-50 text-xs"
+												>
+													Premium
+												</Badge>
+											)}
+										</TableCell>
+										<TableCell>
 											<Badge
 												variant={
-													detail.courseType === CourseType.EBOOK
+													detail.courseType === "EBOOK"
 														? "default"
 														: "secondary"
 												}
 											>
-												{detail.courseType === CourseType.EBOOK
+												{detail.courseType === "EBOOK"
 													? "E-Book"
 													: "Video"}
 											</Badge>
@@ -231,40 +349,50 @@ export function DetailCourseTable({
 								))
 							) : (
 								<TableRow>
-									<TableCell colSpan={7} className="h-24 text-center">
-										No course details found.
-									</TableCell>
+							<TableCell colSpan={8} className="h-24 text-center">
+									Tidak ada rekaman ditemukan.
+								</TableCell>
 								</TableRow>
 							)}
 						</TableBody>
 					</Table>
 				</div>
 			</div>
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-md border">
-				<div className="text-sm text-muted-foreground w-full sm:w-auto text-center sm:text-left order-2 sm:order-1">
+			<div className="space-y-3 rounded-md border bg-white p-4">
+				<div className="text-sm text-muted-foreground">
 					{tableData.total} detail course ditemukan.
 				</div>
-				<div className="flex items-center justify-center w-full sm:w-auto gap-2 order-1 sm:order-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setPage((p) => Math.max(1, p - 1))}
-						disabled={page === 1 || loading}
-					>
-						Previous
-					</Button>
-					<div className="text-sm font-medium min-w-[100px] text-center">
-						Page {page} of {tableData.pageCount}
-					</div>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setPage((p) => Math.min(tableData.pageCount, p + 1))}
-						disabled={page === tableData.pageCount || loading}
-					>
-						Next
-					</Button>
-				</div>
+				<Pagination>
+					<PaginationContent>
+						<PaginationItem>
+							<PaginationPrevious
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								disabled={page === 1 || loading}
+							/>
+						</PaginationItem>
+						{getPageNumbers().map((pageItem, index) => (
+							<PaginationItem key={`${pageItem}-${index}`}>
+								{pageItem === "ellipsis" ? (
+									<PaginationEllipsis />
+								) : (
+									<PaginationLink
+										isActive={pageItem === page}
+										onClick={() => setPage(pageItem)}
+										disabled={loading}
+									>
+										{pageItem}
+									</PaginationLink>
+								)}
+							</PaginationItem>
+						))}
+						<PaginationItem>
+							<PaginationNext
+								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+								disabled={page === totalPages || loading}
+							/>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
 			</div>
 		</div>
 	);

@@ -15,6 +15,7 @@ export const getUsersAction = actionClient
 			page: z.number().min(1).default(1),
 			perPage: z.number().min(1).default(10),
 			search: z.string().optional(),
+			roleFilter: z.enum(["all", "admin", "member"]).optional(),
 			sortField: z.enum(["email", "name", "createdAt"]).optional(),
 			sortOrder: z.enum(["asc", "desc"]).optional(),
 		}),
@@ -25,28 +26,59 @@ export const getUsersAction = actionClient
 				page,
 				perPage,
 				search,
+				roleFilter = "all",
 				sortField = "createdAt",
 				sortOrder = "desc",
 			} = parsedInput;
 			const skip = (page - 1) * perPage;
+			const normalizedSearch = (search ?? "").trim().replace(/\s+/g, " ");
+			const searchTerms = normalizedSearch
+				.split(" ")
+				.map((term) => term.trim())
+				.filter(Boolean);
 
-			const where = search
+			const searchWhere = searchTerms.length
 				? {
-						OR: [
-							{ email: { contains: search } },
-							{
-								UserProfile: {
-									some: {
-										OR: [
-											{ firstName: { contains: search } },
-											{ lastName: { contains: search } },
-										],
+						AND: searchTerms.map((term) => ({
+							OR: [
+								{ email: { contains: term } },
+								{
+									UserProfile: {
+										some: {
+											OR: [
+												{ firstName: { contains: term } },
+												{ lastName: { contains: term } },
+												{ institution: { contains: term } },
+												{ city: { contains: term } },
+												{ province: { contains: term } },
+												{ address: { contains: term } },
+												{ phone: { contains: term } },
+											],
+										},
 									},
 								},
-							},
-						],
+							],
+						})),
 					}
 				: {};
+			const roleWhere =
+				roleFilter === "admin"
+					? {
+							tokens: {
+								some: { type: "EMAIL_VERIFICATION" as const },
+							},
+						}
+					: roleFilter === "member"
+						? {
+								tokens: {
+									none: { type: "EMAIL_VERIFICATION" as const },
+								},
+							}
+						: {};
+			const whereClauses = [searchWhere, roleWhere].filter(
+				(clause) => Object.keys(clause).length > 0,
+			);
+			const where = whereClauses.length > 0 ? { AND: whereClauses } : {};
 
 			const orderBy = {
 				[sortField]: sortOrder,
@@ -70,14 +102,21 @@ export const getUsersAction = actionClient
 								province: true,
 							},
 						},
-						UserCourses: {
+						UserCourseDetails: {
 							select: {
 								id: true,
-								courseId: true,
-								course: {
+								courseDetailId: true,
+								courseDetail: {
 									select: {
 										id: true,
-										courseName: true,
+										title: true,
+										course: {
+											select: {
+												id: true,
+												courseName: true,
+												accessType: true,
+											},
+										},
 									},
 								},
 							},
@@ -103,7 +142,7 @@ export const getUsersAction = actionClient
 					updatedAt: user.updatedAt,
 					isAdmin: user.tokens.length > 0,
 					UserProfile: user.UserProfile[0] || null,
-					UserCourses: user.UserCourses,
+					UserCourseDetails: user.UserCourseDetails,
 				})),
 				total,
 				pageCount: Math.ceil(total / perPage),
@@ -127,11 +166,11 @@ export const createUserAction = actionClient
 					UserProfile: {
 						create: parsedInput.profile,
 					},
-					...(parsedInput.courses && parsedInput.courses.length > 0
+					...(parsedInput.courseDetails && parsedInput.courseDetails.length > 0
 						? {
-								UserCourses: {
-									create: parsedInput.courses.map((courseId) => ({
-										courseId,
+								UserCourseDetails: {
+									create: parsedInput.courseDetails.map((courseDetailId) => ({
+										courseDetailId,
 									})),
 								},
 							}
@@ -139,14 +178,21 @@ export const createUserAction = actionClient
 				},
 				include: {
 					UserProfile: true,
-					UserCourses: {
+					UserCourseDetails: {
 						select: {
 							id: true,
-							courseId: true,
-							course: {
+							courseDetailId: true,
+							courseDetail: {
 								select: {
 									id: true,
-									courseName: true,
+									title: true,
+									course: {
+										select: {
+											id: true,
+											courseName: true,
+											accessType: true,
+										},
+									},
 								},
 							},
 						},
@@ -180,11 +226,10 @@ export const deleteUserAction = actionClient
 	.schema(z.object({ id: z.string() }))
 	.action(async ({ parsedInput }) => {
 		try {
-			// 1. Check if user exists and has active courses
 			const user = await prisma.user.findUnique({
 				where: { id: parsedInput.id },
 				include: {
-					UserCourses: true,
+					UserCourseDetails: true,
 					UserProfile: true,
 				},
 			});
@@ -199,7 +244,6 @@ export const deleteUserAction = actionClient
 				};
 			}
 
-			// 2. Check if user is admin
 			const userToken = await prisma.userToken.findFirst({
 				where: {
 					userId: user.id,
@@ -217,19 +261,17 @@ export const deleteUserAction = actionClient
 				};
 			}
 
-			// 3. Check if user has active courses
-			if (user.UserCourses.length > 0) {
+			if (user.UserCourseDetails.length > 0) {
 				return {
 					data: null,
 					error: {
-						serverError: `User masih memiliki ${user.UserCourses.length} course aktif. Hapus semua course terlebih dahulu.`,
+						serverError: `User masih memiliki ${user.UserCourseDetails.length} akses rekaman aktif. Hapus semua akses rekaman terlebih dahulu.`,
 						type: "HAS_ACTIVE_COURSES",
-						courseCount: user.UserCourses.length,
+						courseCount: user.UserCourseDetails.length,
 					},
 				};
 			}
 
-			// 4. Safe to delete
 			await prisma.user.delete({
 				where: { id: parsedInput.id },
 			});
@@ -269,7 +311,6 @@ export const updateUserAction = actionClient
 				});
 			}
 
-			// Define type for updateData
 			type UpdateData = {
 				email: string;
 				UserProfile?: {
@@ -278,20 +319,18 @@ export const updateUserAction = actionClient
 						data: Record<string, string>;
 					};
 				};
-				UserCourses?: {
+				UserCourseDetails?: {
 					deleteMany: Record<string, never>;
 					create: Array<{
-						courseId: string;
+						courseDetailId: string;
 					}>;
 				};
 			};
 
-			// Prepare update data with proper type
 			const updateData: UpdateData = {
 				email: parsedInput.email,
 			};
 
-			// Hanya update profile jika ada data profile yang dikirim
 			if (parsedInput.profile && user.UserProfile[0]?.id) {
 				updateData.UserProfile = {
 					update: {
@@ -305,17 +344,15 @@ export const updateUserAction = actionClient
 				};
 			}
 
-			// Update courses jika ada perubahan
-			if (parsedInput.courses) {
-				updateData.UserCourses = {
+			if (parsedInput.courseDetails) {
+				updateData.UserCourseDetails = {
 					deleteMany: {},
-					create: parsedInput.courses.map((courseId) => ({
-						courseId,
+					create: parsedInput.courseDetails.map((courseDetailId) => ({
+						courseDetailId,
 					})),
 				};
 			}
 
-			// Update user data
 			await prisma.user.update({
 				where: { id: parsedInput.id },
 				data: updateData,

@@ -51,17 +51,21 @@ export default async function CoursePage({ params }: CoursePageProps) {
 		notFound();
 	}
 
-	// Cek apakah user memiliki akses ke course parent
-	const userCourse = await prisma.userCourses.findFirst({
-		where: {
-			userId: session.userId,
-			courseId: courseDetail.course.id, // Menggunakan ID course parent
-		},
-	});
+	// Jika rekaman ini ada di kategori FREE, lewati cek akses (bebas akses).
+	if (courseDetail.course.accessType === "PREMIUM") {
+		// Cek apakah user memiliki akses granular ke detail course ini
+		const userAccess = await prisma.userCourseDetails.findUnique({
+			where: {
+				userId_courseDetailId: {
+					userId: session.userId,
+					courseDetailId: courseDetail.id,
+				},
+			},
+		});
 
-	// Jika user tidak memiliki akses ke course parent, redirect ke halaman premium
-	if (!userCourse) {
-		redirect("/dashboard/premium");
+		if (!userAccess) {
+			redirect("/dashboard/premium");
+		}
 	}
 
 	// Transform the data to match the expected type

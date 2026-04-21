@@ -38,7 +38,7 @@ const commonMenuItems: MenuItem[] = [
 // Menu khusus admin
 const adminOnlyMenuItems: MenuItem[] = [
 	{
-		title: "Courses",
+		title: "Jenis Course",
 		href: "/dashboard/courses",
 		icon: Book,
 	},

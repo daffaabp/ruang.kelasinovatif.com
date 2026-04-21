@@ -37,6 +37,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createDetailCourseAction } from "./detailcourse-actions";
 import type { PaginatedResult } from "./detailcourse-types";
 import { detailCourseFormSchema } from "./detailcourse-validations";
+import type { AccessType } from "@prisma/client";
 
 interface CourseOption {
 	id: string;
@@ -46,6 +47,10 @@ interface CourseOption {
 interface DetailCourseAddModalProps {
 	details: PaginatedResult;
 	courseOptions: CourseOption[];
+	/** Kalau diisi, dropdown Course disembunyikan dan courseId di-lock ke nilai ini */
+	fixedCourseId?: string;
+	/** Label tombol, default "Tambah Detail Course" */
+	buttonLabel?: string;
 }
 
 function generateTempId() {
@@ -55,6 +60,8 @@ function generateTempId() {
 export function DetailCourseAddModal({
 	details,
 	courseOptions,
+	fixedCourseId,
+	buttonLabel = "Tambah Detail Course",
 }: DetailCourseAddModalProps) {
 	const [open, setOpen] = useState(false);
 	const [selectedCourseType, setSelectedCourseType] = useState<CourseType>(CourseType.EBOOK);
@@ -80,13 +87,19 @@ export function DetailCourseAddModal({
 								createdAt: new Date(),
 								updatedAt: new Date(),
 								course: (() => {
-									const foundCourse = courseOptions.find(
-										(c) => c.id === input.courseId,
-									);
-									return foundCourse
-										? { courseName: foundCourse.courseName }
-										: { courseName: "Unknown" };
-								})(),
+								const foundCourse = courseOptions.find(
+									(c) => c.id === input.courseId,
+								);
+								return foundCourse
+									? {
+											courseName: foundCourse.courseName,
+											accessType: "PREMIUM" as AccessType,
+										}
+									: {
+											courseName: "Unknown",
+											accessType: "PREMIUM" as AccessType,
+										};
+							})(),
 							},
 							...state.data,
 						],
@@ -112,27 +125,27 @@ export function DetailCourseAddModal({
 						);
 					},
 				},
-				formProps: {
-					defaultValues: {
-						courseId: "",
-						title: "",
-						description: "",
-						courseType: CourseType.EBOOK,
-						videoUrl: "",
-						downloadUrl: "",
-					},
+			formProps: {
+				defaultValues: {
+					courseId: fixedCourseId ?? "",
+					title: "",
+					description: "",
+					courseType: CourseType.EBOOK,
+					videoUrl: "",
+					downloadUrl: "",
 				},
+			},
 			},
 		);
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				<Button>
-					<Plus className="mr-2 h-4 w-4" />
-					Tambah Detail Course
-				</Button>
-			</DialogTrigger>
+		<DialogTrigger asChild>
+			<Button>
+				<Plus className="mr-2 h-4 w-4" />
+				{buttonLabel}
+			</Button>
+		</DialogTrigger>
 			<DialogContent className="sm:max-w-[500px] p-0 sm:p-6">
 				<DialogHeader className="px-4 sm:px-0 pt-4 sm:pt-0">
 					<DialogTitle>Add New Course Detail</DialogTitle>
@@ -145,19 +158,22 @@ export function DetailCourseAddModal({
 						onSubmit={handleSubmitWithAction}
 						className="space-y-4 px-4 sm:px-0 pb-4 sm:pb-0"
 					>
+					{fixedCourseId ? (
+						<input type="hidden" {...form.register("courseId")} />
+					) : (
 						<FormField
 							control={form.control}
 							name="courseId"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Course</FormLabel>
+									<FormLabel>Jenis Course</FormLabel>
 									<Select
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 									>
 										<FormControl>
 											<SelectTrigger>
-												<SelectValue placeholder="Select a course" />
+												<SelectValue placeholder="Pilih jenis course" />
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
@@ -172,6 +188,7 @@ export function DetailCourseAddModal({
 								</FormItem>
 							)}
 						/>
+					)}
 						<FormField
 							control={form.control}
 							name="title"

@@ -3,6 +3,22 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
 	Table,
 	TableBody,
 	TableCell,
@@ -26,6 +42,7 @@ const defaultTableData: PaginatedResult = {
 
 type SortField = "email" | "name" | "createdAt";
 type SortOrder = "asc" | "desc";
+type RoleFilter = "all" | "admin" | "member";
 
 export function UserTable({ initialData }: { initialData: PaginatedResult }) {
 	const [loading, setLoading] = useState(false);
@@ -34,6 +51,7 @@ export function UserTable({ initialData }: { initialData: PaginatedResult }) {
 	const [tableData, setTableData] = useState<PaginatedResult>(initialData);
 	const [sortField, setSortField] = useState<SortField>("createdAt");
 	const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+	const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
 
 	const debouncedSearch = useDebounce(search, 500);
 
@@ -53,6 +71,7 @@ export function UserTable({ initialData }: { initialData: PaginatedResult }) {
 				page,
 				perPage: 10,
 				search: debouncedSearch,
+				roleFilter,
 				sortField: sortField === "name" ? "createdAt" : sortField,
 				sortOrder,
 			});
@@ -85,7 +104,7 @@ export function UserTable({ initialData }: { initialData: PaginatedResult }) {
 		} finally {
 			setLoading(false);
 		}
-	}, [page, debouncedSearch, sortField, sortOrder]);
+	}, [page, debouncedSearch, sortField, sortOrder, roleFilter]);
 
 	useEffect(() => {
 		fetchData();
@@ -97,20 +116,73 @@ export function UserTable({ initialData }: { initialData: PaginatedResult }) {
 		}
 	}, [loading]);
 
+	useEffect(() => {
+		setPage(1);
+	}, [debouncedSearch, roleFilter]);
+
 	const handleDataChange = useCallback(() => {
 		fetchData();
 	}, [fetchData]);
 
+	const totalPages = Math.max(1, tableData.pageCount);
+	const getPageNumbers = () => {
+		const pages: Array<number | "ellipsis"> = [];
+		if (totalPages <= 7) {
+			for (let i = 1; i <= totalPages; i++) pages.push(i);
+			return pages;
+		}
+		pages.push(1);
+		if (page > 3) pages.push("ellipsis");
+		for (
+			let i = Math.max(2, page - 1);
+			i <= Math.min(totalPages - 1, page + 1);
+			i++
+		) {
+			pages.push(i);
+		}
+		if (page < totalPages - 2) pages.push("ellipsis");
+		pages.push(totalPages);
+		return pages;
+	};
+
 	return (
 		<div className="space-y-4 px-4 sm:px-0">
-			<div className="flex items-center gap-2">
-				<Search className="h-4 w-4 text-muted-foreground" />
-				<Input
-					placeholder="Search by name or email..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					className="max-w-sm"
-				/>
+			<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+				<div className="flex items-center gap-2">
+					<Search className="h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder="Search by name or email..."
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						className="max-w-sm"
+					/>
+				</div>
+				<div className="flex items-center gap-2">
+					<Select
+						value={roleFilter}
+						onValueChange={(value) => setRoleFilter(value as RoleFilter)}
+					>
+						<SelectTrigger className="w-[170px]">
+							<SelectValue placeholder="Filter role" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All roles</SelectItem>
+							<SelectItem value="admin">Admin only</SelectItem>
+							<SelectItem value="member">Member only</SelectItem>
+						</SelectContent>
+					</Select>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => {
+							setSearch("");
+							setRoleFilter("all");
+							setPage(1);
+						}}
+					>
+						Reset
+					</Button>
+				</div>
 			</div>
 			<div className="rounded-md border bg-white">
 				<div className="overflow-x-auto">
@@ -222,31 +294,41 @@ export function UserTable({ initialData }: { initialData: PaginatedResult }) {
 					</Table>
 				</div>
 			</div>
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-md border">
-				<div className="text-sm text-muted-foreground w-full sm:w-auto text-center sm:text-left order-2 sm:order-1">
+			<div className="space-y-3 rounded-md border bg-white p-4">
+				<div className="text-sm text-muted-foreground">
 					{tableData.total} user(s) found.
 				</div>
-				<div className="flex items-center justify-center w-full sm:w-auto gap-2 order-1 sm:order-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setPage((p) => Math.max(1, p - 1))}
-						disabled={page === 1 || loading}
-					>
-						Previous
-					</Button>
-					<div className="text-sm font-medium min-w-[100px] text-center">
-						Page {page} of {tableData.pageCount}
-					</div>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={() => setPage((p) => Math.min(tableData.pageCount, p + 1))}
-						disabled={page === tableData.pageCount || loading}
-					>
-						Next
-					</Button>
-				</div>
+				<Pagination>
+					<PaginationContent>
+						<PaginationItem>
+							<PaginationPrevious
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								disabled={page === 1 || loading}
+							/>
+						</PaginationItem>
+						{getPageNumbers().map((pageItem, index) => (
+							<PaginationItem key={`${pageItem}-${index}`}>
+								{pageItem === "ellipsis" ? (
+									<PaginationEllipsis />
+								) : (
+									<PaginationLink
+										isActive={pageItem === page}
+										onClick={() => setPage(pageItem)}
+										disabled={loading}
+									>
+										{pageItem}
+									</PaginationLink>
+								)}
+							</PaginationItem>
+						))}
+						<PaginationItem>
+							<PaginationNext
+								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+								disabled={page === totalPages || loading}
+							/>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
 			</div>
 		</div>
 	);

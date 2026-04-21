@@ -8,14 +8,14 @@ datasource db {
 }
 
 model User {
-  id             String        @id @default(cuid())
-  email          String        @unique
-  hashedPassword String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  tokens         UserToken[]
-  UserProfile    UserProfile[]
-  UserCourses    UserCourses[]
+  id                String              @id @default(cuid())
+  email             String              @unique
+  hashedPassword    String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  tokens            UserToken[]
+  UserProfile       UserProfile[]
+  UserCourseDetails UserCourseDetails[]
 
   @@map("users")
 }
@@ -60,41 +60,53 @@ enum CourseType {
   VIDEO
 }
 
+enum AccessType {
+  FREE
+  PREMIUM
+}
+
 model Courses {
   id                String          @id @default(cuid())
   courseName        String
   courseDescription String
-  price            String?         // Harga dalam Rupiah, null untuk course gratis
-  linkPayment      String?         // Link pembayaran, null untuk course gratis
-  UserCourses       UserCourses[]
+  price             String?
+  linkPayment       String?
+  accessType        AccessType      @default(PREMIUM)
+  thumbnailUrl      String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @default(now()) @updatedAt
   CourseDetails     CourseDetails[]
 
   @@map("courses")
 }
 
 model CourseDetails {
-  id          String     @id @default(cuid())
-  courseId    String
-  title       String
-  description String
-  courseType  CourseType
-  videoUrl    String?
-  downloadUrl String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  course      Courses    @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  id                String              @id @default(cuid())
+  courseId          String
+  title             String
+  description       String
+  courseType        CourseType
+  videoUrl          String?
+  downloadUrl       String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  course            Courses             @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  UserCourseDetails UserCourseDetails[]
 
   @@map("course_details")
 }
 
-model UserCourses {
-  id        String   @id @default(cuid())
-  userId    String
-  courseId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course    Courses  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+model UserCourseDetails {
+  id             String        @id @default(cuid())
+  userId         String
+  courseDetailId String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseDetail   CourseDetails @relation(fields: [courseDetailId], references: [id], onDelete: Cascade)
 
-  @@map("user_courses")
+  @@unique([userId, courseDetailId])
+  @@index([userId])
+  @@index([courseDetailId])
+  @@map("user_course_details")
 }

@@ -13,7 +13,7 @@ export const exportUsersToExcelAction = actionClient
             const users = await prisma.user.findMany({
                 include: {
                     UserProfile: true,
-                    UserCourses: {
+                    UserCourseDetails: {
                         select: { id: true }
                     },
                     tokens: {
@@ -40,7 +40,7 @@ export const exportUsersToExcelAction = actionClient
                 'Province': user.UserProfile[0]?.province || '',
                 'Created At': new Date(user.createdAt).toLocaleDateString('id-ID'),
                 'Status Admin': user.tokens.length > 0 ? 'Yes' : 'No',
-                'Total Courses': user.UserCourses.length
+                'Total Akses Rekaman': user.UserCourseDetails.length
             }));
 
             // 3. Generate Excel workbook

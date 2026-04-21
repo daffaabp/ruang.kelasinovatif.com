@@ -12,6 +12,7 @@ export const getCoursesAction = actionClient
 			page: z.number().min(1).default(1),
 			perPage: z.number().min(1).default(5),
 			search: z.string().optional(),
+			accessFilter: z.enum(["all", "free", "premium"]).optional(),
 			sortField: z.enum(["courseName", "id"]).optional(),
 			sortOrder: z.enum(["asc", "desc"]).optional(),
 		}),
@@ -22,18 +23,39 @@ export const getCoursesAction = actionClient
 				page,
 				perPage,
 				search,
+				accessFilter = "all",
 				sortField = "courseName",
 				sortOrder = "asc",
 			} = parsedInput;
 			const skip = (page - 1) * perPage;
+			const normalizedSearch = (search ?? "").trim().replace(/\s+/g, " ");
+			const searchTerms = normalizedSearch
+				.split(" ")
+				.map((term) => term.trim())
+				.filter(Boolean);
 
-			const where = search
+			const searchWhere = searchTerms.length
 				? {
-						courseName: {
-							contains: search
-						},
+						AND: searchTerms.map((term) => ({
+							OR: [
+								{ courseName: { contains: term } },
+								{ courseDescription: { contains: term } },
+							],
+						})),
 					}
 				: {};
+
+			const accessWhere =
+				accessFilter === "free"
+					? { accessType: "FREE" as const }
+					: accessFilter === "premium"
+						? { accessType: "PREMIUM" as const }
+						: {};
+
+			const whereClauses = [searchWhere, accessWhere].filter(
+				(clause) => Object.keys(clause).length > 0,
+			);
+			const where = whereClauses.length > 0 ? { AND: whereClauses } : {};
 
 			const [courses, total] = await Promise.all([
 				prisma.courses.findMany({
@@ -44,6 +66,8 @@ export const getCoursesAction = actionClient
 						courseDescription: true,
 						price: true,
 						linkPayment: true,
+						accessType: true,
+						thumbnailUrl: true,
 					},
 					skip,
 					take: perPage,
@@ -71,14 +95,23 @@ export const createCourseAction = actionClient
 	.schema(courseFormSchema)
 	.action(async ({ parsedInput }) => {
 		try {
-			const { courseName, courseDescription, price, linkPayment } = parsedInput;
+			const {
+				courseName,
+				courseDescription,
+				accessType,
+				price,
+				linkPayment,
+				thumbnailUrl,
+			} = parsedInput;
 
 			const course = await prisma.courses.create({
 				data: {
 					courseName,
 					courseDescription,
+					accessType,
 					price,
 					linkPayment,
+					thumbnailUrl,
 				},
 			});
 
@@ -92,7 +125,7 @@ export const createCourseAction = actionClient
 			return {
 				success: false,
 				error:
-					error instanceof Error ? error.message : "Failed to create course",
+					error instanceof Error ? error.message : "Gagal membuat jenis course",
 			};
 		}
 	});
@@ -104,64 +137,74 @@ export const deleteCourseAction = actionClient
 			const course = await prisma.courses.findUnique({
 				where: { id: parsedInput.id },
 				include: {
-					UserCourses: true,
-					CourseDetails: true
-				}
+					CourseDetails: {
+						include: {
+							_count: {
+								select: {
+									UserCourseDetails: true,
+								},
+							},
+						},
+					},
+				},
 			});
 
 			if (!course) {
 				return {
 					data: null,
-					error: { 
-						serverError: "Course tidak ditemukan",
-						type: "NOT_FOUND"
-					}
+					error: {
+						serverError: "Jenis course tidak ditemukan",
+						type: "NOT_FOUND",
+					},
 				};
 			}
 
-			// Check UserCourses
-			if (course.UserCourses.length > 0) {
+			const totalUserAccesses = course.CourseDetails.reduce(
+				(sum, d) => sum + d._count.UserCourseDetails,
+				0,
+			);
+
+			if (totalUserAccesses > 0) {
 				return {
 					data: null,
 					error: {
-						serverError: `Course "${course.courseName}" tidak dapat dihapus karena masih digunakan oleh ${course.UserCourses.length} user aktif. Hapus user dari course terlebih dahulu.`,
+						serverError: `Jenis course "${course.courseName}" tidak dapat dihapus karena masih digunakan oleh ${totalUserAccesses} akses user aktif. Hapus akses user terlebih dahulu.`,
 						type: "COURSE_IN_USE",
-						userCount: course.UserCourses.length
-					}
+						userCount: totalUserAccesses,
+					},
 				};
 			}
 
-			// Check CourseDetails
 			if (course.CourseDetails.length > 0) {
 				return {
 					data: null,
 					error: {
-						serverError: `Course "${course.courseName}" tidak dapat dihapus karena masih memiliki ${course.CourseDetails.length} detail materi. Hapus semua detail materi terlebih dahulu.`,
+						serverError: `Jenis course "${course.courseName}" tidak dapat dihapus karena masih memiliki ${course.CourseDetails.length} rekaman materi. Hapus semua rekaman terlebih dahulu.`,
 						type: "HAS_COURSE_DETAILS",
-						detailCount: course.CourseDetails.length
-					}
+						detailCount: course.CourseDetails.length,
+					},
 				};
 			}
 
 			await prisma.courses.delete({
-				where: { id: parsedInput.id }
+				where: { id: parsedInput.id },
 			});
 
 			return {
-				data: { 
-					message: `Course "${course.courseName}" berhasil dihapus`,
-					type: "SUCCESS"
+				data: {
+					message: `Jenis course "${course.courseName}" berhasil dihapus`,
+					type: "SUCCESS",
 				},
-				error: null
+				error: null,
 			};
 		} catch (error) {
 			console.error("Delete error:", error);
 			return {
 				data: null,
-				error: { 
-					serverError: "Terjadi kesalahan saat menghapus course",
-					type: "UNKNOWN_ERROR"
-				}
+				error: {
+					serverError: "Terjadi kesalahan saat menghapus jenis course",
+					type: "UNKNOWN_ERROR",
+				},
 			};
 		}
 	});
@@ -170,20 +213,30 @@ export const updateCourseAction = actionClient
 	.schema(updateCourseSchema)
 	.action(async ({ parsedInput }) => {
 		try {
-			const { id, courseName, courseDescription, price, linkPayment } =
-				parsedInput;
+			const {
+				id,
+				courseName,
+				courseDescription,
+				accessType,
+				price,
+				linkPayment,
+				thumbnailUrl,
+			} = parsedInput;
 
 			const course = await prisma.courses.update({
 				where: { id },
 				data: {
 					courseName,
 					courseDescription,
+					accessType,
 					price,
 					linkPayment,
+					thumbnailUrl,
 				},
 			});
 
 			revalidatePath("/dashboard/courses");
+			revalidatePath(`/dashboard/courses/${id}`);
 			return {
 				success: true,
 				data: course,
@@ -193,7 +246,9 @@ export const updateCourseAction = actionClient
 			return {
 				success: false,
 				error:
-					error instanceof Error ? error.message : "Failed to update course",
+					error instanceof Error
+						? error.message
+						: "Gagal memperbarui jenis course",
 			};
 		}
 	});

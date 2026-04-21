@@ -51,7 +51,7 @@ const commonMenuItems: MenuItem[] = [
 ]
 
 const adminOnlyMenuItems: MenuItem[] = [
-  { title: "Courses", href: "/dashboard/courses", icon: Book },
+  { title: "Jenis Course", href: "/dashboard/courses", icon: Book },
   { title: "Detail Courses", href: "/dashboard/detailcourse", icon: BookOpen },
   { title: "Users", href: "/dashboard/user", icon: Users },
 ]

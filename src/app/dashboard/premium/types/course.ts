@@ -38,6 +38,6 @@ export interface CourseGridProps {
 }
 
 export interface AvailableCoursesResult {
-	subscribedCourses: string[];
+	subscribedDetailIds: string[];
 	allCourses: AvailableCourse[];
 }

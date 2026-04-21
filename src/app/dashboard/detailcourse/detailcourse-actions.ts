@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { actionClient } from "@/lib/safe-action";
 import { returnValidationErrors } from "next-safe-action";
 import { revalidatePath } from "next/cache";
+import { CourseType } from "@prisma/client";
 import { z } from "zod";
 import type { PaginatedResult } from "./detailcourse-types";
 import {
@@ -16,6 +17,8 @@ export const getDetailCoursesAction = actionClient
 			page: z.number().min(1).default(1),
 			perPage: z.number().min(1).default(5),
 			search: z.string().optional(),
+			courseTypeFilter: z.nativeEnum(CourseType).optional(),
+			accessFilter: z.enum(["all", "free", "premium"]).optional(),
 			sortField: z.enum(["title", "updatedAt"]).optional(),
 			sortOrder: z.enum(["asc", "desc"]).optional(),
 			courseId: z.string().optional(),
@@ -27,24 +30,48 @@ export const getDetailCoursesAction = actionClient
 				page,
 				perPage,
 				search,
+				courseTypeFilter,
+				accessFilter = "all",
 				sortField = "updatedAt",
 				sortOrder = "desc",
 				courseId,
 			} = parsedInput;
 			const skip = (page - 1) * perPage;
+			const normalizedSearch = (search ?? "").trim().replace(/\s+/g, " ");
+			const searchTerms = normalizedSearch
+				.split(" ")
+				.map((term) => term.trim())
+				.filter(Boolean);
 
-			const where = {
-				AND: [
-					search
-						? {
-								title: {
-									contains: search
+			const searchWhere = searchTerms.length
+				? {
+						AND: searchTerms.map((term) => ({
+							OR: [
+								{ title: { contains: term } },
+								{ description: { contains: term } },
+								{
+									course: {
+										courseName: { contains: term },
+									},
 								},
-							}
-						: {},
-					courseId ? { courseId } : {},
-				],
-			};
+							],
+						})),
+					}
+				: {};
+			const accessWhere =
+				accessFilter === "free"
+					? { course: { accessType: "FREE" as const } }
+					: accessFilter === "premium"
+						? { course: { accessType: "PREMIUM" as const } }
+						: {};
+
+			const whereClauses = [
+				searchWhere,
+				courseId ? { courseId } : {},
+				courseTypeFilter ? { courseType: courseTypeFilter } : {},
+				accessWhere,
+			].filter((clause) => Object.keys(clause).length > 0);
+			const where = whereClauses.length > 0 ? { AND: whereClauses } : {};
 
 			const [details, total] = await Promise.all([
 				prisma.courseDetails.findMany({
@@ -54,15 +81,16 @@ export const getDetailCoursesAction = actionClient
 					orderBy: {
 						[sortField]: sortOrder,
 					},
-					include: {
-						course: {
-							select: {
-								courseName: true,
-							},
+				include: {
+					course: {
+						select: {
+							courseName: true,
+							accessType: true,
 						},
 					},
-				}),
-				prisma.courseDetails.count({ where }),
+				},
+			}),
+			prisma.courseDetails.count({ where }),
 			]);
 
 			const result: PaginatedResult = {
@@ -95,6 +123,7 @@ export const createDetailCourseAction = actionClient
 					course: {
 						select: {
 							courseName: true,
+							accessType: true,
 						},
 					},
 				},

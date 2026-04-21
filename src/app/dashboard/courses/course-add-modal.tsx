@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useHookFormOptimisticAction } from "@next-safe-action/adapter-react-hook-form/hooks";
+import { AccessType } from "@prisma/client";
 import { Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -24,6 +25,13 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 import { createCourseAction } from "./course-actions";
@@ -42,8 +50,10 @@ export function CourseAddModal({ courses }: { courses: PaginatedResult }) {
 					defaultValues: {
 						courseName: "",
 						courseDescription: "",
+						accessType: AccessType.PREMIUM,
 						price: undefined,
 						linkPayment: undefined,
+						thumbnailUrl: undefined,
 					},
 				},
 				actionProps: {
@@ -56,8 +66,10 @@ export function CourseAddModal({ courses }: { courses: PaginatedResult }) {
 									id: Date.now().toString(),
 									courseName: input.courseName,
 									courseDescription: input.courseDescription,
+									accessType: input.accessType ?? ("PREMIUM" as const),
 									price: input.price || null,
 									linkPayment: input.linkPayment || null,
+									thumbnailUrl: input.thumbnailUrl || null,
 								},
 								...state.data,
 							],
@@ -68,38 +80,40 @@ export function CourseAddModal({ courses }: { courses: PaginatedResult }) {
 					onSuccess: (result) => {
 						if (result && "data" in result && result.data?.success) {
 							setOpen(false);
-							toast.success("Course created successfully");
+							toast.success("Jenis course berhasil dibuat");
 							resetFormAndAction();
 						} else {
 							toast.error(
 								typeof result?.data?.error === "string"
 									? result.data.error
-									: "Failed to create course",
+									: "Gagal membuat jenis course",
 							);
 						}
 					},
 					onError: (error) => {
 						toast.error(
-							typeof error === "string" ? error : "Failed to create course",
+							typeof error === "string" ? error : "Gagal membuat jenis course",
 						);
 					},
 				},
 			},
 		);
 
+	const watchedAccessType = form.watch("accessType");
+
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button>
 					<Plus className="mr-2 h-4 w-4" />
-					Add Course
+					Tambah Jenis Course
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="sm:max-w-[500px] p-0 sm:p-6">
+			<DialogContent className="sm:max-w-[500px] p-0 sm:p-6 max-h-[90vh] overflow-y-auto">
 				<DialogHeader className="px-4 sm:px-0 pt-4 sm:pt-0">
-					<DialogTitle>Add New Course</DialogTitle>
+					<DialogTitle>Tambah Jenis Course</DialogTitle>
 					<DialogDescription>
-						Create a new course by filling out the form below.
+						Buat jenis course baru (contoh: Workshop NotebookLM, Ngabuburit AI).
 					</DialogDescription>
 				</DialogHeader>
 				<Form {...form}>
@@ -112,9 +126,12 @@ export function CourseAddModal({ courses }: { courses: PaginatedResult }) {
 							name="courseName"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Course Name</FormLabel>
+									<FormLabel>Nama Jenis Course</FormLabel>
 									<FormControl>
-										<Input placeholder="Enter course name" {...field} />
+										<Input
+											placeholder="cth: Workshop NotebookLM"
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -125,11 +142,11 @@ export function CourseAddModal({ courses }: { courses: PaginatedResult }) {
 							name="courseDescription"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Description</FormLabel>
+									<FormLabel>Deskripsi</FormLabel>
 									<FormControl>
 										<Textarea
-											placeholder="Enter course description"
-											className="min-h-[100px]"
+											placeholder="Deskripsi singkat tentang jenis course ini"
+											className="min-h-[80px]"
 											{...field}
 										/>
 									</FormControl>
@@ -137,60 +154,114 @@ export function CourseAddModal({ courses }: { courses: PaginatedResult }) {
 								</FormItem>
 							)}
 						/>
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-							<FormField
-								control={form.control}
-								name="price"
-								render={({ field: { value, onChange, ...field } }) => (
-									<FormItem>
-										<FormLabel>Price (Optional)</FormLabel>
+						<FormField
+							control={form.control}
+							name="accessType"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Tipe Akses</FormLabel>
+									<Select
+										onValueChange={field.onChange}
+										value={field.value}
+									>
 										<FormControl>
-											<Input
-												type="text"
-												placeholder="Enter price in Rupiah"
-												{...field}
-												value={value ?? ""}
-												onChange={(e) => {
-													const val = e.target.value;
-													onChange(val === "" ? undefined : val);
-												}}
-											/>
+											<SelectTrigger>
+												<SelectValue placeholder="Pilih tipe akses" />
+											</SelectTrigger>
 										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="linkPayment"
-								render={({ field: { value, onChange, ...field } }) => (
-									<FormItem>
-										<FormLabel>Payment Link (Optional)</FormLabel>
-										<FormControl>
-											<Input
-												placeholder="Enter payment link"
-												{...field}
-												value={value ?? ""}
-												onChange={(e) => {
-													const val = e.target.value;
-													onChange(val === "" ? undefined : val);
-												}}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</div>
+										<SelectContent>
+											<SelectItem value={AccessType.PREMIUM}>
+												🔒 Premium — harus di-grant ke user
+											</SelectItem>
+											<SelectItem value={AccessType.FREE}>
+												🆓 Free — semua user bisa akses
+											</SelectItem>
+										</SelectContent>
+									</Select>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						{watchedAccessType === AccessType.PREMIUM && (
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<FormField
+									control={form.control}
+									name="price"
+									render={({ field: { value, onChange, ...field } }) => (
+										<FormItem>
+											<FormLabel>Harga (Rp)</FormLabel>
+											<FormControl>
+												<Input
+													type="text"
+													placeholder="cth: 350000"
+													{...field}
+													value={value ?? ""}
+													onChange={(e) => {
+														const val = e.target.value;
+														onChange(val === "" ? undefined : val);
+													}}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="linkPayment"
+									render={({ field: { value, onChange, ...field } }) => (
+										<FormItem>
+											<FormLabel>Link Pembayaran</FormLabel>
+											<FormControl>
+												<Input
+													placeholder="https://..."
+													{...field}
+													value={value ?? ""}
+													onChange={(e) => {
+														const val = e.target.value;
+														onChange(val === "" ? undefined : val);
+													}}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
+						)}
+
+						<FormField
+							control={form.control}
+							name="thumbnailUrl"
+							render={({ field: { value, onChange, ...field } }) => (
+								<FormItem>
+									<FormLabel>URL Thumbnail (Opsional)</FormLabel>
+									<FormControl>
+										<Input
+											placeholder="https://..."
+											{...field}
+											value={value ?? ""}
+											onChange={(e) => {
+												const val = e.target.value;
+												onChange(val === "" ? undefined : val);
+											}}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
 						<div className="flex justify-end">
 							<Button type="submit" disabled={form.formState.isSubmitting}>
 								{form.formState.isSubmitting ? (
 									<>
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										Adding...
+										Menyimpan...
 									</>
 								) : (
-									"Add Course"
+									"Simpan"
 								)}
 							</Button>
 						</div>

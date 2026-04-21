@@ -14,7 +14,7 @@ export const createUserSchema = z.object({
 	email: z.string().email("Invalid email address"),
 	password: z.string().min(8, "Password must be at least 8 characters"),
 	profile: userProfileSchema,
-	courses: z.array(z.string()).optional(),
+	courseDetails: z.array(z.string()).optional(),
 });
 
 export const updateUserSchema = z.object({
@@ -29,7 +29,7 @@ export const updateUserSchema = z.object({
 		city: z.string().optional(),
 		province: z.string().optional(),
 	}).optional(),
-	courses: z.array(z.string()).optional(),
+	courseDetails: z.array(z.string()).optional(),
 });
 
 export const deleteUserSchema = z.object({

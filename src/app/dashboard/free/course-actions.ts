@@ -21,7 +21,7 @@ export const getFreeCoursesAction = actionClient
 					courseType ? { courseType } : {},
 					{
 						course: {
-							price: null,
+							accessType: "FREE" as const,
 						},
 					},
 				],
@@ -65,7 +65,7 @@ export const getFreeCourseById = async (courseId: string) => {
 			where: {
 				id: courseId,
 				course: {
-					price: null,
+					accessType: "FREE",
 				},
 			},
 			include: {

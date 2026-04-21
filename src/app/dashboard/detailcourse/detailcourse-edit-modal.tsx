@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+import type { AccessType } from "@prisma/client";
 import { updateDetailCourseAction } from "./detailcourse-actions";
 import type { PaginatedResult } from "./detailcourse-types";
 import { updateDetailCourseSchema } from "./detailcourse-validations";
@@ -78,13 +79,14 @@ export function DetailCourseEditModal({
 									videoUrl: input.videoUrl,
 									downloadUrl: input.downloadUrl,
 									updatedAt: new Date(),
-									course: courseOptions.find((c) => c.id === input.courseId)
-										? {
-												courseName:
-													courseOptions.find((c) => c.id === input.courseId)
-														?.courseName || "Unknown",
-											}
-										: d.course,
+					course: courseOptions.find((c) => c.id === input.courseId)
+									? {
+											courseName:
+												courseOptions.find((c) => c.id === input.courseId)
+													?.courseName ?? "Unknown",
+											accessType: d.course.accessType as AccessType,
+										}
+									: d.course,
 								}
 							: d,
 					);

@@ -1,6 +1,5 @@
 "use client";
 
-import type { Courses } from "@prisma/client";
 import { Loader2, Trash2 } from "lucide-react";
 import { useOptimisticAction } from "next-safe-action/hooks";
 import { useState } from "react";
@@ -23,7 +22,7 @@ import { deleteCourseAction } from "./course-actions";
 import type { PaginatedResult } from "./course-types";
 
 interface CourseDeleteDialogProps {
-	course: Courses;
+	course: { id: string; courseName: string };
 	tableData: PaginatedResult;
 	onDataChange: (data: PaginatedResult) => void;
 }

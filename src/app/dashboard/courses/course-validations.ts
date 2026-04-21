@@ -1,10 +1,12 @@
+import { AccessType } from "@prisma/client";
 import { z } from "zod";
 
 export const courseFormSchema = z.object({
-	courseName: z.string().min(1, "Course name is required"),
+	courseName: z.string().min(1, "Nama jenis course harus diisi"),
 	courseDescription: z
 		.string()
-		.min(10, "Description must be at least 10 characters"),
+		.min(10, "Deskripsi minimal 10 karakter"),
+	accessType: z.nativeEnum(AccessType).default(AccessType.PREMIUM),
 	price: z
 		.union([z.string(), z.undefined()])
 		.optional()
@@ -19,14 +21,21 @@ export const courseFormSchema = z.object({
 			if (!val || val === "") return null;
 			return val;
 		}),
+	thumbnailUrl: z
+		.union([z.string(), z.undefined()])
+		.optional()
+		.transform((val) => {
+			if (!val || val === "") return null;
+			return val;
+		}),
 });
 
 export const updateCourseSchema = courseFormSchema.extend({
-	id: z.string().min(1, "Course ID is required"),
+	id: z.string().min(1, "Course ID harus diisi"),
 });
 
 export const deleteCourseSchema = z.object({
-	id: z.string().min(1, "Course ID is required"),
+	id: z.string().min(1, "Course ID harus diisi"),
 });
 
 export type CourseFormValues = z.infer<typeof courseFormSchema>;

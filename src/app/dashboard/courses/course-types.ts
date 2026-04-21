@@ -1,9 +1,13 @@
+import type { AccessType } from "@prisma/client";
+
 export type Course = {
 	id: string;
 	courseName: string;
 	courseDescription: string;
 	price: string | null;
 	linkPayment: string | null;
+	accessType: AccessType;
+	thumbnailUrl: string | null;
 };
 
 export type PaginatedResult = {
