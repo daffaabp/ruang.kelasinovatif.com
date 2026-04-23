@@ -86,7 +86,7 @@ export function ProfileCompletionDialog() {
 								Lengkapi Profil Anda
 							</DialogTitle>
 							<DialogDescription className="text-sm text-slate-500 mt-0.5">
-								Data ini diperlukan sebelum Anda dapat menggunakan layanan.
+								Agar bisa mengakses rekaman-rekaman di Kelas Inovatif, mohon lengkapi informasi berikut dengan data yang benar.
 							</DialogDescription>
 						</div>
 					</div>
@@ -166,11 +166,11 @@ export function ProfileCompletionDialog() {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel className="text-sm font-semibold text-slate-700">
-										Institusi / Sekolah <span className="text-red-500">*</span>
+										Institusi / Unit Kerja <span className="text-red-500">*</span>
 									</FormLabel>
 									<FormControl>
 										<Input
-											placeholder="Nama sekolah atau institusi"
+											placeholder="Nama institusi atau unit kerja"
 											className="rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 focus:border-primary focus:ring-primary"
 											{...field}
 										/>
@@ -187,11 +187,11 @@ export function ProfileCompletionDialog() {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel className="text-sm font-semibold text-slate-700">
-										Alamat <span className="text-red-500">*</span>
+										Alamat (opsional)
 									</FormLabel>
 									<FormControl>
 										<Input
-											placeholder="Alamat lengkap"
+											placeholder="Alamat"
 											className="rounded-lg border-slate-200 bg-slate-50 focus:bg-white text-slate-800 placeholder-slate-400 focus:border-primary focus:ring-primary"
 											{...field}
 										/>

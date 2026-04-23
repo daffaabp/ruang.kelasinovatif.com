@@ -5,7 +5,7 @@ export const profileSchema = z.object({
 	lastName: z.string().min(1, { message: "Nama belakang wajib diisi" }),
 	phone: z.string().min(1, { message: "No. telepon wajib diisi" }),
 	institution: z.string().min(1, { message: "Institusi / sekolah wajib diisi" }),
-	address: z.string().min(1, { message: "Alamat wajib diisi" }),
+	address: z.string().optional().transform((value) => value?.trim() ?? ""),
 	city: z.string().min(1, { message: "Kota wajib diisi" }),
 	province: z.string().min(1, { message: "Provinsi wajib diisi" }),
 });
