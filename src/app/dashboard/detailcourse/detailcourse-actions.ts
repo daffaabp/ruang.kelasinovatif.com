@@ -1,6 +1,7 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 import { actionClient } from "@/lib/safe-action";
+import { createNotification } from "@/app/dashboard/notifications/notification-actions";
 import { returnValidationErrors } from "next-safe-action";
 import { revalidatePath } from "next/cache";
 import { CourseType } from "@prisma/client";
@@ -73,14 +74,16 @@ export const getDetailCoursesAction = actionClient
 			].filter((clause) => Object.keys(clause).length > 0);
 			const where = whereClauses.length > 0 ? { AND: whereClauses } : {};
 
-			const [details, total] = await Promise.all([
-				prisma.courseDetails.findMany({
-					where,
-					skip,
-					take: perPage,
-					orderBy: {
-						[sortField]: sortOrder,
-					},
+		const orderByClause = courseId
+			? [{ sortOrder: "asc" as const }, { [sortField]: sortOrder }]
+			: [{ [sortField]: sortOrder }];
+
+		const [details, total] = await Promise.all([
+			prisma.courseDetails.findMany({
+				where,
+				skip,
+				take: perPage,
+				orderBy: orderByClause,
 				include: {
 					course: {
 						select: {
@@ -91,7 +94,7 @@ export const getDetailCoursesAction = actionClient
 				},
 			}),
 			prisma.courseDetails.count({ where }),
-			]);
+		]);
 
 			const result: PaginatedResult = {
 				data: details,
@@ -129,17 +132,24 @@ export const createDetailCourseAction = actionClient
 				},
 			});
 
-			revalidatePath("/dashboard/detailcourse");
-			return {
-				success: true,
-				data: {
-					...newDetail,
-					createdAt: new Date(newDetail.createdAt),
-					updatedAt: new Date(newDetail.updatedAt),
-				},
-			};
-		} catch (error) {
-			console.error("Create course detail error:", error);
+		revalidatePath("/dashboard/detailcourse");
+		await createNotification(
+			"NEW_CONTENT",
+			"Rekaman Baru Ditambahkan",
+			`"${newDetail.title}" telah ditambahkan ke ${newDetail.course.courseName}.`,
+			{ detailId: newDetail.id, courseId: newDetail.courseId },
+		);
+
+		return {
+			success: true,
+			data: {
+				...newDetail,
+				createdAt: new Date(newDetail.createdAt),
+				updatedAt: new Date(newDetail.updatedAt),
+			},
+		};
+	} catch (error) {
+		console.error("Create course detail error:", error);
 
 			if (error instanceof Error) {
 				return { success: false, error: error.message };
@@ -175,6 +185,33 @@ export const deleteDetailCourseAction = actionClient
 				data: null,
 				error: { serverError: "Gagal menghapus detail course" },
 			};
+		}
+	});
+
+export const updateSortOrderAction = actionClient
+	.schema(
+		z.object({
+			items: z.array(
+				z.object({ id: z.string(), sortOrder: z.number() }),
+			),
+			courseId: z.string(),
+		}),
+	)
+	.action(async ({ parsedInput }) => {
+		try {
+			await prisma.$transaction(
+				parsedInput.items.map(({ id, sortOrder }) =>
+					prisma.courseDetails.update({
+						where: { id },
+						data: { sortOrder },
+					}),
+				),
+			);
+			revalidatePath(`/dashboard/courses/${parsedInput.courseId}`);
+			return { success: true };
+		} catch (error) {
+			console.error("Update sort order error:", error);
+			return { success: false, error: "Gagal menyimpan urutan" };
 		}
 	});
 

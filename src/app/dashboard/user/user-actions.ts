@@ -3,6 +3,8 @@
 import { hashPassword } from "@/lib/password-utils";
 import { prisma } from "@/lib/prisma";
 import { actionClient } from "@/lib/safe-action";
+import { createNotification } from "@/app/dashboard/notifications/notification-actions";
+import { Role } from "@prisma/client";
 import { returnValidationErrors } from "next-safe-action";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -61,20 +63,12 @@ export const getUsersAction = actionClient
 						})),
 					}
 				: {};
-			const roleWhere =
-				roleFilter === "admin"
-					? {
-							tokens: {
-								some: { type: "EMAIL_VERIFICATION" as const },
-							},
-						}
-					: roleFilter === "member"
-						? {
-								tokens: {
-									none: { type: "EMAIL_VERIFICATION" as const },
-								},
-							}
-						: {};
+		const roleWhere =
+			roleFilter === "admin"
+				? { role: Role.ADMIN }
+				: roleFilter === "member"
+					? { role: Role.MEMBER }
+					: {};
 			const whereClauses = [searchWhere, roleWhere].filter(
 				(clause) => Object.keys(clause).length > 0,
 			);
@@ -121,14 +115,6 @@ export const getUsersAction = actionClient
 								},
 							},
 						},
-						tokens: {
-							where: {
-								type: "EMAIL_VERIFICATION",
-							},
-							select: {
-								id: true,
-							},
-						},
 					},
 				}),
 				prisma.user.count({ where }),
@@ -140,7 +126,7 @@ export const getUsersAction = actionClient
 					email: user.email,
 					createdAt: user.createdAt,
 					updatedAt: user.updatedAt,
-					isAdmin: user.tokens.length > 0,
+					isAdmin: user.role === Role.ADMIN,
 					UserProfile: user.UserProfile[0] || null,
 					UserCourseDetails: user.UserCourseDetails,
 				})),
@@ -200,16 +186,25 @@ export const createUserAction = actionClient
 				},
 			});
 
-			revalidatePath("/dashboard/user");
-			return {
-				success: true,
-				data: {
-					...newUser,
-					UserProfile: newUser.UserProfile[0] || null,
-				},
-			};
-		} catch (error) {
-			console.error("Create user error:", error);
+		revalidatePath("/dashboard/user");
+
+		const name = `${parsedInput.profile.firstName} ${parsedInput.profile.lastName}`.trim();
+		await createNotification(
+			"NEW_USER_REGISTERED",
+			"User Baru Terdaftar",
+			`${name || parsedInput.email} telah ditambahkan sebagai member baru.`,
+			{ userId: newUser.id, email: parsedInput.email },
+		);
+
+		return {
+			success: true,
+			data: {
+				...newUser,
+				UserProfile: newUser.UserProfile[0] || null,
+			},
+		};
+	} catch (error) {
+		console.error("Create user error:", error);
 
 			if (error instanceof Error) {
 				return { success: false, error: error.message };
@@ -244,14 +239,7 @@ export const deleteUserAction = actionClient
 				};
 			}
 
-			const userToken = await prisma.userToken.findFirst({
-				where: {
-					userId: user.id,
-					type: "EMAIL_VERIFICATION",
-				},
-			});
-
-			if (userToken) {
+			if (user.role === Role.ADMIN) {
 				return {
 					data: null,
 					error: {

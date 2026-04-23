@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import type { CourseType } from "@prisma/client";
-import { ChevronLeft, Download, FileText, FileType, Presentation } from "lucide-react";
+import { ChevronLeft, FileText, FileType, Presentation } from "lucide-react";
 import { useRouter } from "next/navigation";
 import WhatsAppButton from "./whatsapp-button";
 import YouTubePlayer, { getYouTubeId } from "./youtube-player";
@@ -107,23 +107,6 @@ export default function CourseDetail({ course }: CourseDetailProps) {
 		? getGoogleDriveFileId(course.downloadUrl || "")
 		: null;
 
-	const handleCertificateClick = () => {
-		const phoneNumber = "6285712208535";
-		const message = `Selamat siang kak, saya ingin mendapatkan sertifikat dari event "${course.title}". 
-
-Untuk keperluan penerbitan e-sertifikat (Khusus Event Free Webinar), 
-Mohon izin untuk bisa mengisi data terlebih dahulu :
-
-Nama dan Gelar : 
-Email : 
-Institusi/Unit kerja : 
-Kota asal :
-Bukti Follow Instagram @kelasinovatif :`;
-
-		const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-		window.open(whatsappUrl, "_blank");
-	};
-
 	return (
 		<article className="space-y-4">
 			{/* Navigation and Header Combined */}
@@ -142,23 +125,9 @@ Bukti Follow Instagram @kelasinovatif :`;
 				</nav>
 
 				{/* Header with Flex Layout */}
-				<div className="flex items-start justify-between gap-4">
-					<div className="space-y-1">
-						<div className="flex items-center gap-2">
-							<h1 className="text-2xl font-bold tracking-tight">{course.title}</h1>
-						</div>
-						<p className="text-sm text-muted-foreground">{course.course.courseName}</p>
-					</div>
-					
-					{/* Certificate Button */}
-					<Button
-						onClick={handleCertificateClick}
-						className="bg-green-600 hover:bg-green-700 text-white shadow-sm transition-colors shrink-0"
-						size="sm"
-					>
-						<Download className="w-4 h-4 mr-2" />
-						Link Download Sertifikat
-					</Button>
+				<div className="space-y-1 min-w-0">
+					<h1 className="text-xl sm:text-2xl font-bold tracking-tight">{course.title}</h1>
+					<p className="text-sm text-muted-foreground">{course.course.courseName}</p>
 				</div>
 			</div>
 

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { normalizePhone } from "@/lib/phone-utils"
 import { actionClient } from "@/lib/safe-action"
+import { createNotification } from "@/app/dashboard/notifications/notification-actions"
 import { z } from "zod"
 import * as XLSX from "xlsx"
 import type {
@@ -241,6 +242,19 @@ export const processImportAction = actionClient
     const sukses = results.filter((r) => r.status === "SUKSES").length
     const skip = results.filter((r) => r.status === "SKIP").length
     const gagal = results.filter((r) => r.status === "GAGAL").length
+
+    if (sukses > 0) {
+      const detail = await prisma.courseDetails.findUnique({
+        where: { id: courseDetailId },
+        select: { title: true, course: { select: { courseName: true } } },
+      })
+      await createNotification(
+        "ACCESS_GRANTED",
+        "Akses Premium Diberikan",
+        `${sukses} user mendapat akses ke "${detail?.title ?? courseDetailId}" (${detail?.course?.courseName ?? ""}).`,
+        { courseDetailId, sukses, skip, gagal },
+      )
+    }
 
     return {
       summary: { total: rows.length, sukses, skip, gagal },

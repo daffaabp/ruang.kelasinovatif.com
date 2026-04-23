@@ -206,7 +206,7 @@ export function AppSidebar({ session }: AppSidebarProps) {
                   {fullName}
                 </p>
                 <p className="truncate text-xs text-sidebar-foreground/60">
-                  Member Premium
+                  {session?.isAdmin ? "Administrator" : "Member"}
                 </p>
               </div>
             </div>

@@ -122,11 +122,11 @@ export default function CourseDetail({ course }: CourseDetailProps) {
 				</Button>
 			</nav>
 
-			{/* Header */}
-			<header className="space-y-2">
-				<h1 className="text-2xl font-bold tracking-tight">{course.title}</h1>
-				<p className="text-muted-foreground">{course.course.courseName}</p>
-			</header>
+		{/* Header */}
+		<header className="space-y-2">
+			<h1 className="text-xl sm:text-2xl font-bold tracking-tight leading-snug">{course.title}</h1>
+			<p className="text-sm sm:text-base text-muted-foreground">{course.course.courseName}</p>
+		</header>
 
 			{/* Content */}
 			<div className="space-y-6">

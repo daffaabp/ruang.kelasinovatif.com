@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
+import { NotificationBell } from "@/app/dashboard/notifications/notification-bell"
 
 const titleMap: Record<string, string> = {
 	"/dashboard": "Beranda",
@@ -15,7 +16,11 @@ const titleMap: Record<string, string> = {
 	"/dashboard/kelola-akses": "Kelola Akses",
 }
 
-export function Header() {
+interface HeaderProps {
+	isAdmin?: boolean
+}
+
+export function Header({ isAdmin }: HeaderProps) {
 	const pathname = usePathname()
 
 	let title = "Dashboard"
@@ -34,10 +39,14 @@ export function Header() {
 	return (
 		<header className="glass-header sticky top-0 z-40 flex h-16 shrink-0 items-center gap-2 border-b border-black/5 px-4 transition-[width,height] ease-linear">
 			<div className="flex w-full items-center gap-3">
-				{/* Sidebar toggle trigger dari shadcn */}
 				<SidebarTrigger className="-ml-1 text-slate-600 hover:text-primary" />
 				<Separator orientation="vertical" className="mr-1 h-5" />
 				<h1 className="text-xl font-bold text-slate-800">{title}</h1>
+				{isAdmin && (
+					<div className="ml-auto">
+						<NotificationBell />
+					</div>
+				)}
 			</div>
 		</header>
 	)

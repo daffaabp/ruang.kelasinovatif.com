@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { actionClient } from "@/lib/safe-action";
+import { Role } from "@prisma/client";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 
@@ -16,10 +17,6 @@ export const exportUsersToExcelAction = actionClient
                     UserCourseDetails: {
                         select: { id: true }
                     },
-                    tokens: {
-                        where: { type: "EMAIL_VERIFICATION" },
-                        select: { id: true }
-                    }
                 },
                 orderBy: { createdAt: 'desc' }
             });
@@ -39,7 +36,7 @@ export const exportUsersToExcelAction = actionClient
                 'City': user.UserProfile[0]?.city || '',
                 'Province': user.UserProfile[0]?.province || '',
                 'Created At': new Date(user.createdAt).toLocaleDateString('id-ID'),
-                'Status Admin': user.tokens.length > 0 ? 'Yes' : 'No',
+                'Status Admin': user.role === Role.ADMIN ? 'Yes' : 'No',
                 'Total Akses Rekaman': user.UserCourseDetails.length
             }));
 

@@ -202,9 +202,8 @@ export const getPremiumCoursesAction = actionClient
 				prisma.courseDetails.findMany({
 					where,
 					orderBy: [
-						{
-							createdAt: "desc",
-						},
+						{ sortOrder: "asc" },
+						{ createdAt: "desc" },
 					],
 					include: {
 						course: {

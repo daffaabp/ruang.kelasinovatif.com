@@ -7,10 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  MEMBER
+}
+
 model User {
   id                String              @id @default(cuid())
   email             String              @unique
   hashedPassword    String
+  role              Role                @default(MEMBER)
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   tokens            UserToken[]
@@ -88,12 +94,31 @@ model CourseDetails {
   courseType        CourseType
   videoUrl          String?
   downloadUrl       String?
+  sortOrder         Int                 @default(0)
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   course            Courses             @relation(fields: [courseId], references: [id], onDelete: Restrict)
   UserCourseDetails UserCourseDetails[]
 
   @@map("course_details")
+}
+
+enum NotificationType {
+  NEW_USER_REGISTERED
+  ACCESS_GRANTED
+  NEW_CONTENT
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  metadata  Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
 }
 
 model UserCourseDetails {

@@ -7,8 +7,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getDetailCoursesAction } from "../../detailcourse/detailcourse-actions";
 import { DetailCourseAddModal } from "../../detailcourse/detailcourse-add-modal";
-import { DetailCourseTable } from "../../detailcourse/detailcourse-table";
 import type { PaginatedResult as DetailPaginatedResult } from "../../detailcourse/detailcourse-types";
+import { SortableRecordingTable } from "./sortable-recording-table";
 
 interface PageProps {
 	params: Promise<{ id: string }>;
@@ -168,19 +168,19 @@ export default async function CourseDetailPage({ params }: PageProps) {
 					/>
 				</div>
 
-				<Suspense
-					fallback={
-						<div className="flex items-center justify-center h-32 text-muted-foreground">
-							Memuat rekaman...
-						</div>
-					}
-				>
-					<DetailCourseTable
-						initialData={detailData}
-						courseOptions={allCourses}
-						selectedCourseId={id}
-					/>
-				</Suspense>
+			<Suspense
+				fallback={
+					<div className="flex items-center justify-center h-32 text-muted-foreground">
+						Memuat rekaman...
+					</div>
+				}
+			>
+				<SortableRecordingTable
+					initialData={detailData}
+					courseOptions={allCourses}
+					courseId={id}
+				/>
+			</Suspense>
 			</div>
 		</div>
 	);

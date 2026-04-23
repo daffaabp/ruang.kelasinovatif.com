@@ -4,6 +4,7 @@ import { hashPassword, verifyPassword } from "@/lib/password-utils";
 import { prisma } from "@/lib/prisma";
 import { actionClient } from "@/lib/safe-action";
 import { getSession } from "@/lib/sessions";
+import { Role } from "@prisma/client";
 import { returnValidationErrors } from "next-safe-action";
 import { loginSchema } from "./login-validations";
 
@@ -27,14 +28,15 @@ export const loginAction = actionClient
 
 				// Find or create admin user
 				const hashedAdminPassword = await hashPassword(ADMIN_PASSWORD);
-				const user = await tx.user.upsert({
-					where: { email: parsedInput.email },
-					create: {
-						email: parsedInput.email,
-						hashedPassword: hashedAdminPassword,
-					},
-					update: {}, // No update needed
-				});
+			const user = await tx.user.upsert({
+				where: { email: parsedInput.email },
+				create: {
+					email: parsedInput.email,
+					hashedPassword: hashedAdminPassword,
+					role: Role.ADMIN,
+				},
+				update: { role: Role.ADMIN },
+			});
 
 				// Create and save admin session
 				const session = await getSession();

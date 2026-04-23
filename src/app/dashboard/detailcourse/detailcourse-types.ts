@@ -9,6 +9,7 @@ export type PaginatedResult = {
 		courseType: CourseType;
 		videoUrl?: string | null;
 		downloadUrl?: string | null;
+		sortOrder: number;
 		createdAt: Date;
 		updatedAt: Date;
 		course: {

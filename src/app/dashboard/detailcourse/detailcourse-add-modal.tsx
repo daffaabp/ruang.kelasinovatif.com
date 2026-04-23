@@ -75,17 +75,18 @@ export function DetailCourseAddModal({
 					currentState: details,
 					updateFn: (state, input) => ({
 						...state,
-						data: [
-							{
-								id: generateTempId(),
-								courseId: input.courseId,
-								title: input.title,
-								description: input.description,
-								courseType: input.courseType,
-								videoUrl: input.videoUrl,
-								downloadUrl: input.downloadUrl,
-								createdAt: new Date(),
-								updatedAt: new Date(),
+					data: [
+						{
+							id: generateTempId(),
+							courseId: input.courseId,
+							title: input.title,
+							description: input.description,
+							courseType: input.courseType,
+							videoUrl: input.videoUrl,
+							downloadUrl: input.downloadUrl,
+							sortOrder: 0,
+							createdAt: new Date(),
+							updatedAt: new Date(),
 								course: (() => {
 								const foundCourse = courseOptions.find(
 									(c) => c.id === input.courseId,
