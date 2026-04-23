@@ -12,6 +12,7 @@ const titleMap: Record<string, string> = {
 	"/dashboard/user": "Users",
 	"/dashboard/free": "Materi Gratis",
 	"/dashboard/premium": "Materi Premium",
+	"/dashboard/kelola-akses": "Kelola Akses",
 }
 
 export function Header() {

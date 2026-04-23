@@ -11,6 +11,7 @@ const adminRoutes = [
 	"/dashboard/courses",
 	"/dashboard/detailcourse",
 	"/dashboard/user",
+	"/dashboard/kelola-akses",
 ];
 
 export async function middleware(request: NextRequest) {

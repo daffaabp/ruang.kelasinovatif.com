@@ -10,6 +10,7 @@ import {
   Home,
   LogOut,
   Sparkles,
+  Upload,
   Users,
 } from "lucide-react"
 import Image from "next/image"
@@ -54,6 +55,7 @@ const adminOnlyMenuItems: MenuItem[] = [
   { title: "Jenis Course", href: "/dashboard/courses", icon: Book },
   { title: "Detail Courses", href: "/dashboard/detailcourse", icon: BookOpen },
   { title: "Users", href: "/dashboard/user", icon: Users },
+  { title: "Kelola Akses", href: "/dashboard/kelola-akses", icon: Upload },
 ]
 
 const userOnlyMenuItems: MenuItem[] = [
