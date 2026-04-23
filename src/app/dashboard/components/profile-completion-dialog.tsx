@@ -86,7 +86,7 @@ export function ProfileCompletionDialog() {
 								Lengkapi Profil Anda
 							</DialogTitle>
 							<DialogDescription className="text-sm text-slate-500 mt-0.5">
-								Agar bisa mengakses rekaman-rekaman di Kelas Inovatif, mohon lengkapi informasi berikut dengan data yang benar.
+								Terima kasih telah mendaftar di Ruang Kelas Inovatif. Selanjutnya, mohon lengkapi profil Anda untuk dapat mengakses rekaman video.
 							</DialogDescription>
 						</div>
 					</div>
